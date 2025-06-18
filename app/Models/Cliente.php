@@ -6,11 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Cliente extends Model
 {
-    /** @use HasFactory<\Database\Factories\ClientesFactory> */
     use HasFactory;
+    use SoftDeletes;
     public $timestamps = true;
     protected $table = "clientes";
     protected $primaryKey = "idcliente";

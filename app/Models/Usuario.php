@@ -2,14 +2,20 @@
 
 namespace App\Models;
 
+use Database\Seeders\RolSeeder;
+use Illuminate\Database\Eloquent\Factories\BelongsToRelationship;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Usuario extends Model
 {
-    /** @use HasFactory<\Database\Factories\UsuariosFactory> */
     use HasFactory;
+    use SoftDeletes;
     public $timestamps = true;
     protected $table = "usuarios";
     protected $primaryKey = "idusuario";
@@ -19,13 +25,11 @@ class Usuario extends Model
     public function cliente(): BelongsTo
     {
         return $this->belongsTo(Cliente::class, "idcliente", "idcliente");
-        //Un usuario tiene un solo cliente
     }
 
-    public function rol(): BelongsTo
+    public function roles(): BelongsTo
     {
-        return $this->belongsTo(Rol::class, "idrol", "idrol");
-        //Un usuario tiene un solo cliente
+        return $this->belongsTo(Roles::class, "idrol", "idrol");
     }
-
+   
 }

@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Configuracion extends Model
 {
-    /** @use HasFactory<\Database\Factories\ConfiguracionFactory> */
     use HasFactory;
-
+    use SoftDeletes;
     public $timestamps = true;
     protected $table = "configuracion";
     protected $primaryKey = "idconfiguracion";

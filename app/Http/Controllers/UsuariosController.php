@@ -12,26 +12,34 @@ use Illuminate\Http\Request;
 class UsuariosController extends Controller
 {
 
-    public function getAll()
+    public function getAll(Request $request)
     {
-        $clientes = Usuario::with("cliente", "rol")->get();
-        return ["status" => true, "data" => $clientes];
+        $payload = Controller::tokenSecurity($request)["payload"];
+         // {"ref":idusuario,"paq":idcliente,"task":idrol,"expire_date":"2025-06-19 02:29:07"}
+        if ( $payload["paq"] ===null){
+            $data = Usuario::with("cliente", "roles", "roles.menu")->get();
+        }else{
+            $data = Usuario::where("idcliente", $payload["paq"])->with("cliente", "roles", "roles.menu")->get();
+        }
+        return Controller::reponseFormat(true, $data, "") ;
     }
 
     public function getOne($id)
     {
-        // var_dump($request->getContent());
         $status = false;
-        $data = "";
+        $data = [];
+        $mensaje = "";
         if (isset($id)){
             $status = true;
-            $data = Usuario::where("idusuario", "=", $id)->with("cliente", "rol")->get();
+            // $data = Usuario::where("idusuario", "=", $id)->with("cliente", "rol")->get();
+            $data = Usuario::where("idusuario", $id)->with("cliente", "roles")->get();
+            // $data = Usuario::where("usuario", $usuario)->where("estado", 1)->with("cliente", "roles", "roles.menu")->get();
+
         }else{
-            $data = "ID del usuario esta vacío";
+            $data = [];
+            $mensaje = "ID del usuario esta vacío";
         }
-        // return ["status" => $status, "data" => $data];
-        $response = ["status" => $status, "data" => $data];
-        return response()->json($response);
+        return Controller::reponseFormat($status, $data, $mensaje) ;
 
     }
 
