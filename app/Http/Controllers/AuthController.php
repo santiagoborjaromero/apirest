@@ -45,8 +45,8 @@ class AuthController extends Controller
                 $status = false;
                 $data = [];
                 $newclave = $this->generacionClave();
-                $mensaje .= " " . $newclave;
-                Controller::enviarMensaje($rs->idusuario, $mensaje);
+                $msg = $mensaje . " " . $newclave;
+                Controller::enviarMensaje($rs->idusuario, $msg);
                 $record["clave"] = Controller::encode($newclave);
                 $record["clave_expiracion"] = date("Y-m-d H:i:s", strtotime('+1 year'));
                 Usuario::where("idusuario", $rs->idusuario)->update(json_decode(json_encode($record),true));
@@ -63,7 +63,7 @@ class AuthController extends Controller
                         ],
                         "mensaje" => $mensaje
                     ]);
-                    Controller::enviarMensaje($rs->idusuario, $mensaje . " " . Controller::encode($clave) . " " . $rs->clave);
+                    Controller::enviarMensaje($rs->idusuario, $mensaje);
                 } else {
                     if ($rs->clave_expiracion===null){
                         $rs->clave_expiracion = date("Y-m-d H:i:s", strtotime('+1 year'));
@@ -153,8 +153,8 @@ class AuthController extends Controller
 
     public function genToken($obj){
         $rec = [
-            "ref" => $obj->idusuario,
             "paq" => $obj->idcliente,
+            "ref" => $obj->idusuario,
             "task" => $obj->idrol,
             "expire_date" => date("Y-m-d H:i:s", strtotime('+1 day'))
         ];

@@ -10,10 +10,10 @@ use Illuminate\Http\Response;
 
 abstract class Controller
 {
-    static $key     = "7PToGGTJ71knRd86WF39wfj619qewnbZ"; //Clave de 32 bits
-    static $iv      = "q24nxK63oYShfXwU"; //Vector de Inicializacion de 16 bits
-    static $cifrado = "AES-256-CBC";
-
+    static $passphrase = "7PToGGTJ71knRd86WF39wfj619qewnbZ"; //Clave de 32 bits
+    static $iv         = "cAbBrz3Lzy4Ucwhx"; //Vector de Inicializacion de 16 bits
+    static $cifrado    = "AES-256-CBC";
+    static $options    = OPENSSL_RAW_DATA;
 
     public static function reponseFormat($status, $data, $msg){
         $resp = [
@@ -25,12 +25,35 @@ abstract class Controller
         return json_encode($resp, JSON_PRETTY_PRINT);
     }
 
-    static public function encode($texto){
-        return base64_encode(openssl_encrypt($texto, Controller::$cifrado, Controller::$key, 0, Controller::$iv));
+    static public function encode($data){
+        // return base64_encode(openssl_encrypt($texto, Controller::$cifrado, Controller::$key, 0, Controller::$iv));
+
+        $ciphertext = openssl_encrypt(
+            $data, 
+            Controller::$cifrado,
+            Controller::$passphrase, 
+            Controller::$options, 
+            Controller::$iv
+        );
+
+        $encrypted = base64_encode(Controller::$iv . $ciphertext);
+        return $encrypted;
     }
 
-    static public function decode($texto){
-        $decrypted = openssl_decrypt(base64_decode($texto), Controller::$cifrado ,Controller::$key, 0, Controller::$iv);
+    static public function decode($encrypted){
+        // $decrypted = openssl_decrypt(base64_decode($texto), Controller::$cifrado ,Controller::$passphrase, Controller::$options, Controller::$iv);
+        $data = base64_decode($encrypted);
+        $ivLength = openssl_cipher_iv_length(Controller::$cifrado);
+        $iv = substr($data, 0, $ivLength);
+        $ciphertext = substr($data, $ivLength);
+        
+        $decrypted = openssl_decrypt(
+            $ciphertext,
+            Controller::$cifrado,
+            Controller::$passphrase,
+            Controller::$options,
+            $iv
+        );
         return $decrypted;
     }
 
