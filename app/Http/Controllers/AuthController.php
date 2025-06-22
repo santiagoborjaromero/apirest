@@ -6,6 +6,7 @@ use App\Http\Requests\StoreAuthRequest;
 use App\Http\Requests\UpdateAuthRequest;
 use App\Models\AuditoriaUso;
 use App\Models\HistoricoClaves;
+use App\Models\HistoricoCodigoVerificacion;
 use App\Models\Usuario;
 use Exception;
 use Illuminate\Http\Request;
@@ -97,36 +98,57 @@ class AuthController extends Controller
                         $rs->numero_logueos = intval($rs->numero_logueos) + 1;
                         $record["ultimo_logueo"] = $rs->ultimo_logueo;
                         $record["numero_logueos"] =$rs->numero_logueos;
-        
-                        if ($rs->token === null) {
-                            $rs->token = $this->genToken($rs);
-                            $record["token"] = $rs->token;
-                            // error_log($rs->token);
+
+                        if (intval($rs->roles->estado) == 0){
+                            $status = false;
+                            $mensaje = "Rol asignado al usuario se encuentra suspendido";
+                            $data = [];
+                            $aud->saveAuditoria([
+                                "idusuario" => $rs->idusuario,
+                                "json" => ["rol" => $rs->roles->idrol, "nombre" => $rs->roles->nombre],
+                                "mensaje" => $mensaje
+                            ]);
                         } else {
-                            $val_token = $this->validateToken($rs->token);
-                            error_log("Validacion de token");
-                            error_log(json_encode($val_token));
-                            if (!$val_token["validate"]){
-                                switch ($val_token["mensaje"]){
-                                    case "bad":
-                                        $status = false;
-                                        $data = [];
-                                        $mensaje = "Token inválido";
-                                        $aud->saveAuditoria([
-                                            "idusuario" => $rs->idusuario,
-                                            "mensaje" => $mensaje
-                                        ]);
-                                        break;
-                                    case "expire":
-                                        $rs->token = $this->genToken($rs);
-                                        $record["token"] = $rs->token;
-                                        
-                                        break;
+                            if ($rs->token === null) {
+                                $rs->token = $this->genToken($rs);
+                                $record["token"] = $rs->token;
+                                // error_log($rs->token);
+                            } else {
+                                $val_token = $this->validateToken($rs->token);
+                                error_log("Validacion de token");
+                                error_log(json_encode($val_token));
+                                if (!$val_token["validate"]){
+                                    switch ($val_token["mensaje"]){
+                                        case "bad":
+                                            $status = false;
+                                            $data = [];
+                                            $mensaje = "Token inválido";
+                                            $aud->saveAuditoria([
+                                                "idusuario" => $rs->idusuario,
+                                                "mensaje" => $mensaje
+                                            ]);
+                                            break;
+                                        case "expire":
+                                            $rs->token = $this->genToken($rs);
+                                            $record["token"] = $rs->token;
+                                            
+                                            break;
+                                    }
                                 }
+
+                                /**
+                                 * TODO: Cuando todo esta bien se genera codigo de verificación
+                                 */
+                                $codigo = $this->generacionCodigoVerificacion($rs->idusuario);
+                                Controller::enviarMensaje($rs->idusuario, "Codigo de verificacion para LISAH es: {$codigo}");
+                                $record["verificacion_codigo"] = $codigo;
+                                $record["verificacion_expira"] = date('Y-m-d H:i:s', (strtotime ("+5 Minute")));
+                                $status = true;
                             }
                         }
 
                         if ($status){
+                            error_log("Guardando");
                             error_log(json_encode($record));
                             Usuario::where("idusuario", $rs->idusuario)->update(json_decode(json_encode($record),true));
                             $aud->saveAuditoria([
@@ -196,5 +218,65 @@ class AuthController extends Controller
         }
         return $clave;
     }
+
+    public function generacionCodigoVerificacion($idusuario){
+        do {
+            $codigo = str_pad(random_int(000000,999999),6,"0",STR_PAD_LEFT);
+            $existe = "";
+            $rs = HistoricoCodigoVerificacion::select("codigo")
+                ->where("idusuario", "=",  $idusuario)
+                ->where("codigo", "=", $codigo)
+                ->get();
+            if ($rs){
+                foreach ($rs as $key => $value) {
+                    $existe = $value["codigo"];
+                }
+            }
+        } while($existe != "");
+
+        $data = [
+            "idusuario" => $idusuario,
+            "codigo" => $codigo
+        ];
+
+        HistoricoCodigoVerificacion::create($data);
+
+        return $codigo;
+    }
+
+    public function verificarCodigo(Request $request, $codigo){
+        $payload = Controller::tokenSecurity($request);
+        if ( !$payload["validate"] ){
+            $status = $payload["validate"];
+            $mensaje = $payload["mensaje"];
+        }else{
+            $rs = Usuario::where("idusuario", $payload["payload"]["ref"])->get();
+            foreach ($rs as $key => $value) {
+                $row = $value;
+            }
+            if ($row){
+                $verificacion_codigo = $row["verificacion_codigo"];
+                $fecha_expiracion = date($row["verificacion_expira"]);
+                if ($fecha_expiracion >= date("Y-m-d H:i:s")){
+                    if ($verificacion_codigo == $codigo){
+                        $status = true;
+                        $mensaje = "Código de verificación es correcto";
+                    }else {
+                        $status = false;
+                        $mensaje = "El código de verificación es incorrecto";
+                    }
+                } else {
+                    $status = false;
+                    $mensaje = "El código de verificación ha expirado";
+                }
+            } else {
+                $status = false;
+                $mensaje = "El código de verificación no existe";
+            }
+        }
+
+        return Controller::reponseFormat($status, [], $mensaje) ;
+    }
+
 
 }

@@ -27,10 +27,13 @@ Route::group([
     "namespace" => "App\Http\Controller",
     "middleware" => "private"
 ], function (){
+    Route::post("codigoverificador/{codigo}", [AuthController::class, 'verificarCodigo']);
+
     Route::get("clientes", [ClientesController::class, 'getAll']);
     Route::get("clientes/{id}", [ClientesController::class, 'getOne']);
     
     Route::get("usuarios", [UsuariosController::class, 'getAll']);
     Route::get("usuarios/{id}", [UsuariosController::class, 'getOne']);
+
 // });
 });

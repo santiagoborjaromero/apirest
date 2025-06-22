@@ -20,7 +20,7 @@ class Usuario extends Model
     protected $table = "usuarios";
     protected $primaryKey = "idusuario";
     protected $fillable = [];
-    protected $hidden = ["clave"];
+    protected $hidden = ["clave","verificacion_codigo","verificacion_expira"];
 
     public function cliente(): BelongsTo
     {
