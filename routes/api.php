@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientesController;
 use App\Http\Controllers\ConfiguracionController;
+use App\Http\Controllers\MenuController;
 use App\Http\Controllers\UsuariosController;
 use App\Http\Middleware\EnsureTokenIsValid;
 use Illuminate\Http\Request;
@@ -28,6 +29,8 @@ Route::group([
     "middleware" => "private"
 ], function (){
     Route::post("codigoverificador/{codigo}", [AuthController::class, 'verificarCodigo']);
+
+    Route::get("menu", [MenuController::class, 'getAll']);
 
     Route::get("clientes", [ClientesController::class, 'getAll']);
     Route::get("clientes/{id}", [ClientesController::class, 'getOne']);
