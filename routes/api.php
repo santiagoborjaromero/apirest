@@ -30,7 +30,9 @@ Route::group([
 ], function (){
     Route::post("codigoverificador/{codigo}", [AuthController::class, 'verificarCodigo']);
 
-    Route::get("menu", [MenuController::class, 'getAll']);
+    Route::get("menus", [MenuController::class, 'getAll']);
+    Route::get("menus/{id}", [MenuController::class, 'getOne']);
+    Route::post("menu", [MenuController::class, 'saveNew']);
 
     Route::get("clientes", [ClientesController::class, 'getAll']);
     Route::get("clientes/{id}", [ClientesController::class, 'getOne']);
