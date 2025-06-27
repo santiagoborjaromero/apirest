@@ -1,4 +1,4 @@
-# Deuda Técnica
+# IDEAS PENDIENTES
 ```js
 [..] POST|DELETE configuracion cliente/configuracion, pero en cliente
  
@@ -17,7 +17,7 @@
 [..] Buson de notificacion 
 ```
 
-# Deuda subsanada
+# IDEAS SUBSANADAS
 ```js
 [2025-06-27] el contenido del payload del token no me gusto se debe identificar idcliente, idusuario, idrol, etc
 [2025-06-27] GET|PUT config y cliente en el mismo formulario
