@@ -63,7 +63,6 @@ class MenuController extends Controller
         $mensaje = "";
 
         $payload = (Object) Controller::tokenSecurity($request);
-        $payload_data = $payload->payload;
         if (!$payload->validate){
             $status = false;
             $mensaje = $payload->mensaje;
@@ -80,7 +79,7 @@ class MenuController extends Controller
                 $data = Menu::created($record);
                 $status = true;
                 $aud->saveAuditoria([
-                    "idusuario" => $payload_data->idusuario,
+                    "idusuario" => $payload->payload["idusuario"],
                     "json" => $record
                 ]);
             } catch( Exception $err){

@@ -15,17 +15,16 @@ class UsuariosController extends Controller
     public function getAll(Request $request)
     {
         $payload = (Object)Controller::tokenSecurity($request);
-        $payload_data = $payload->payload;
         $status = false;
         $data = [];
         $mensaje="";
 
         if ($payload->validate){
             $status = true;
-            if ( $payload_data->idcliente === null){
+            if ( $payload->payload["idcliente"] === null){
                 $data = Usuario::with("cliente", "roles", "roles.menu")->get();
             }else{
-                $data = Usuario::where("idcliente", $payload->idcliente)->with("cliente", "roles", "roles.menu")->get();
+                $data = Usuario::where("idcliente", $payload->payload["idcliente"])->with("cliente", "roles", "roles.menu")->get();
             }
         }else{
             $status = false;

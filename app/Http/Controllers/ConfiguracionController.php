@@ -14,7 +14,6 @@ class ConfiguracionController extends Controller
     public function getAll(Request $request)
     {
         $payload = (Object)Controller::tokenSecurity($request);
-        $payload_data = $payload->payload;
         $data = [];
         $mensaje = "";
 
@@ -24,7 +23,7 @@ class ConfiguracionController extends Controller
         } else {
             $status = true;
             $data = Configuracion::with("cliente")
-                ->where("idcliente", $payload_data->paq)
+                ->where("idcliente", $payload->payload["idcliente"])
                 ->get();
         }
 
@@ -35,7 +34,6 @@ class ConfiguracionController extends Controller
     public function update(Request $request)
     {
         $payload = (Object)Controller::tokenSecurity($request);
-        $payload_data = $payload->payload;
         $data = [];
         $mensaje = "";
         $status = false;
@@ -91,7 +89,7 @@ class ConfiguracionController extends Controller
             }
 
             $aud->saveAuditoria([
-                "idusuario" => $payload_data->idusuario,
+                "idusuario" => $payload->payload["idusuario"],
                 "json" => [
                     "cliente" => $record_clie,
                     "configuracion" => $record_cfg

@@ -220,6 +220,28 @@ class AuthController extends Controller
         return $clave;
     }
 
+    public function regenerarCodigo(Request $request){
+        $status = false;
+        $data = [];
+        $mensaje = "";
+        $record = [];
+        $payload = (Object) Controller::tokenSecurity($request);
+        if ($payload->validate){
+            $status = true;
+            $data = [];
+            $mensaje = "Código generado";
+            $codigo = $this->generacionCodigoVerificacion($payload->payload["idusuario"]);
+            Controller::enviarMensaje($payload->payload["idusuario"], "Codigo de verificacion para LISAH es: {$codigo}");
+            $record["verificacion_codigo"] = $codigo;
+            $record["verificacion_expira"] = date('Y-m-d H:i:s', (strtotime ("+5 Minute")));
+            Usuario::where("idusuario", $payload->payload["idusuario"])->update(json_decode(json_encode($record),true));
+        }else{
+            $status = false;
+            $mensaje = $payload->mensaje;
+        }
+        return Controller::reponseFormat($status, $data, $mensaje) ;
+    }
+    
     public function generacionCodigoVerificacion($idusuario){
         do {
             $codigo = str_pad(random_int(000000,999999),6,"0",STR_PAD_LEFT);
@@ -246,13 +268,14 @@ class AuthController extends Controller
     }
 
     public function verificarCodigo(Request $request, $codigo){
-
         $payload = (Object) Controller::tokenSecurity($request);
         if ( !$payload->validate ){
             $status = $payload->validate;
             $mensaje = $payload->mensaje;
         }else{
-            $rs = Usuario::where("idusuario", $payload->payload->idusuario)->get();
+            
+
+            $rs = Usuario::where("idusuario", $payload->payload["idusuario"])->get();
             foreach ($rs as $key => $value) {
                 $row = $value;
             }
@@ -274,6 +297,14 @@ class AuthController extends Controller
             } else {
                 $status = false;
                 $mensaje = "El código de verificación no existe";
+            }
+
+            if (!$status){
+                $aud = new AuditoriaUsoController();
+                $aud->saveAuditoria([
+                    "idusuario" => $payload->payload["idusuario"],
+                    "mensaje" => $mensaje
+                ]);
             }
         }
 

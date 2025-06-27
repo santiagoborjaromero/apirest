@@ -1,5 +1,7 @@
 # IDEAS PENDIENTES
 ```js
+[..] En POSTMAN se puede hacer test y da error especialmente cuando el body esta vació no sale nada, da error de laravel pero nada correcto
+
 [..] POST|DELETE configuracion cliente/configuracion, pero en cliente
  
 [..] En usuarios poner mas relaciones como grupo de usuarios y menu por grupo de usuarios.

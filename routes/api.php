@@ -29,6 +29,7 @@ Route::group([
     "middleware" => "private"
 ], function (){
     Route::post("codigoverificador/{codigo}", [AuthController::class, 'verificarCodigo']);
+    Route::post("regenerarcodigo", [AuthController::class, 'regenerarCodigo']);
 
     Route::get("menus", [MenuController::class, 'getAll']);
     Route::get("menus/{id}", [MenuController::class, 'getOne']);

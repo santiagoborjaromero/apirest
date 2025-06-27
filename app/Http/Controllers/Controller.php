@@ -70,7 +70,6 @@ abstract class Controller
             if ($auth_arr[1] != ""){
                 $token = $auth_arr[1];
                 $payload = json_decode(Controller::decode(base64_decode($token)), true);
-                // error_log(json_encode($payload));
                 if ($payload){
                     if ($payload["expire_date"] >= date("Y-m-d H:i:s")){
                         $conclusion = true;
