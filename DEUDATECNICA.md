@@ -1,5 +1,7 @@
 # Deuda Técnica
 ```js
+[..] POST|DELETE configuracion cliente/configuracion, pero en cliente
+ 
 [..] En usuarios poner mas relaciones como grupo de usuarios y menu por grupo de usuarios.
 
 [..] No se si listar en Usuarios tambien los servidores que tiene de una vez o eso se consulta luego ????
