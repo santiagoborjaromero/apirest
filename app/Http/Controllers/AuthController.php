@@ -27,7 +27,8 @@ class AuthController extends Controller
         $mensaje = "";
         $data = null;
 
-        $data = Usuario::where("usuario", $usuario)->where("estado", 1)->with("cliente", "roles", "roles.menu")->get();
+        $data = Usuario::where("usuario", $usuario)->where("estado", 1)
+            ->with("cliente", "roles", "roles.menu", "config")->get();
 
         foreach ($data as $key => $value) {
             $rs = $value;
@@ -175,8 +176,8 @@ class AuthController extends Controller
 
     public function genToken($obj){
         $rec = [
-            "paq" => $obj->idcliente,
-            "ref" => $obj->idusuario,
+            "idcliente" => $obj->idcliente,
+            "idusuario" => $obj->idusuario,
             "task" => $obj->idrol,
             "expire_date" => date("Y-m-d H:i:s", strtotime('+1 day'))
         ];
@@ -245,12 +246,13 @@ class AuthController extends Controller
     }
 
     public function verificarCodigo(Request $request, $codigo){
-        $payload = Controller::tokenSecurity($request);
-        if ( !$payload["validate"] ){
-            $status = $payload["validate"];
-            $mensaje = $payload["mensaje"];
+
+        $payload = (Object) Controller::tokenSecurity($request);
+        if ( !$payload->validate ){
+            $status = $payload->validate;
+            $mensaje = $payload->mensaje;
         }else{
-            $rs = Usuario::where("idusuario", $payload["payload"]["ref"])->get();
+            $rs = Usuario::where("idusuario", $payload->payload->idusuario)->get();
             foreach ($rs as $key => $value) {
                 $row = $value;
             }

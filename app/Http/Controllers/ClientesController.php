@@ -8,6 +8,7 @@ use App\Http\Resources\ClientesCollection;
 use App\Http\Resources\CustomCollection;
 use App\Models\Cliente;
 use App\Filters\ClientesFilter;
+use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Http\Request;
 
 class ClientesController extends Controller
@@ -15,33 +16,44 @@ class ClientesController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
-    {
-        // $filter = new ClientesFilter();
-        // $queryItems = $filter->transform($request);
-        // $clientes = Clientes::where($queryItems);
-        // return new ClientesCollection($clientes->paginate()->appends($request->query()));
-        $clientes = Cliente::with("configuracion")->get();
-        return ["status" => true, "data" => $clientes];
-    }
 
     public function getAll(Request $request)
     {
-        $clientes = Cliente::with("configuracion")->get();
-        return ["status" => true, "data" => $clientes];
+        $status = false;
+        $data = [];
+        $mensaje = "";
+        $payload = (Object) Controller::tokenSecurity($request);
+        if ($payload->validate){
+            $status = true;
+            $data = Cliente::with("configuracion")->get();
+        }else{
+            $status = false;
+            $mensaje = $payload->mensaje;
+        }
+
+        return Controller::reponseFormat($status, $data, $mensaje) ;
     }
 
-    public function getOne($id)
+    public function getOne(Request $request,  $id)
     {
         $status = false;
-        $data = "";
-        if (isset($id)){
-            $status = true;
-            $data = Cliente::where("idcliente", "=", $id)->with("configuracion")->get();
+        $data = [];
+        $mensaje = "";
+        $payload = (Object) Controller::tokenSecurity($request);
+        if ($payload->validate){
+            $status = false;
+            if (isset($id)){
+                $status = true;
+                $data = Cliente::where("idcliente", "=", $id)->with("configuracion")->get();
+            }else{
+                $mensaje = "ID del cliente esta vacío";
+            }
         }else{
-            $data = "ID del cliente esta vacío";
+            $status = false;
+            $mensaje = $payload->mensaje;
         }
-        return ["status" => $status, "data" => $data];
+        
+        return Controller::reponseFormat($status, $data, $mensaje) ;
     }
 
 }

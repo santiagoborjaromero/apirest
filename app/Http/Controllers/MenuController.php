@@ -7,7 +7,7 @@ use App\Http\Requests\StoreMenuRequest;
 use App\Http\Requests\UpdateMenuRequest;
 use Exception;
 use Illuminate\Http\Request;
-
+use PhpParser\Node\Expr\Cast\Object_;
 
 class MenuController extends Controller
 {
@@ -16,35 +16,57 @@ class MenuController extends Controller
 
     public function getAll(Request $request)
     {
-        $payload = Controller::tokenSecurity($request)["payload"];
-        // {"ref":idusuario,"paq":idcliente,"task":idrol,"expire_date":"2025-06-19 02:29:07"}
-        $data = Menu::All();
-        return Controller::reponseFormat(true, $data, "") ;
+        $status = false;
+        $data = [];
+        $mensaje = "";
+        $payload = (Object) Controller::tokenSecurity($request);
+        if ($payload->validate){
+            $status = true;
+            $data = Menu::All();
+        }else{
+            $status = false;
+            $mensaje = $payload->mensaje;
+        }
+        return Controller::reponseFormat($status, $data, $mensaje) ;
     }
 
 
-    public function getOne($id)
+    public function getOne(Request $request, $id)
     {
         $status = false;
-        $data = "";
-        if (isset($id)){
-            $status = true;
-            $data = Menu::where("idmenu", "=", $id)->get();
+        $data = [];
+        $mensaje = "" ;
+
+        $payload = (Object)Controller::tokenSecurity($request);
+        if ($payload->validate){
+            $status = false;
+            $data = "";
+            if (isset($id)){
+                $status = true;
+                $data = Menu::where("idmenu", "=", $id)->get();
+            }else{
+                $mensaje = "ID esta vacío";
+            }
         }else{
-            $data = "ID esta vacío";
+            $status = false;
+            $mensaje = $payload->mensaje;
         }
-        return ["status" => $status, "data" => $data];
+        return Controller::reponseFormat($status, $data, $mensaje) ;
     }
 
     public function saveNew(Request $request)
     {
         $aud = new AuditoriaUsoController();
+        
+        $status = false;
+        $data = [];
+        $mensaje = "";
 
-        $payload = Controller::tokenSecurity($request);
-        $payload_data = Controller::tokenSecurity($request)["payload"];
-        if (!$payload["validate"]){
+        $payload = (Object) Controller::tokenSecurity($request);
+        $payload_data = $payload->payload;
+        if (!$payload->validate){
             $status = false;
-            $data = $payload["mensaje"];
+            $mensaje = $payload->mensaje;
         }else{
             $record = $request->input("data");
             // $record = [];
@@ -63,14 +85,11 @@ class MenuController extends Controller
                 ]);
             } catch( Exception $err){
                 $status = false;
-                $data = $err;
+                $mensaje = $err;
             }
         }
-        return ["status" => $status, "data" => $data];
+        return Controller::reponseFormat($status, $data, $mensaje) ;
     }
-
-
-
 
 
 
@@ -78,7 +97,8 @@ class MenuController extends Controller
     public function delete($id)
     {
         $status = false;
-        $data = "";
+        $data = [];
+        $mensaje = "";
         if (isset($id)){
             $status = true;
             $data = Menu::where("idmenu", "=", $id)->get();
@@ -86,9 +106,9 @@ class MenuController extends Controller
                 Menu::where("idmenu", "=", $id)->delete();
             }
         }else{
-            $data = "ID esta vacío";
+            $mensaje = "ID esta vacío";
         }
-        return ["status" => $status, "data" => []];
+        return Controller::reponseFormat($status, $data, $mensaje) ;
     }
 
 

@@ -27,6 +27,11 @@ class Usuario extends Model
         return $this->belongsTo(Cliente::class, "idcliente", "idcliente");
     }
 
+    public function config(): BelongsTo
+    {
+        return $this->belongsTo(Configuracion::class, "idcliente", "idcliente");
+    }
+
     public function roles(): BelongsTo
     {
         return $this->belongsTo(Roles::class, "idrol", "idrol");

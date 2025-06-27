@@ -34,6 +34,10 @@ Route::group([
     Route::get("menus/{id}", [MenuController::class, 'getOne']);
     Route::post("menu", [MenuController::class, 'saveNew']);
 
+    Route::get("config", [ConfiguracionController::class, 'getAll']);
+    Route::put("config", [ConfiguracionController::class, 'update']);
+
+
     Route::get("clientes", [ClientesController::class, 'getAll']);
     Route::get("clientes/{id}", [ClientesController::class, 'getOne']);
     
