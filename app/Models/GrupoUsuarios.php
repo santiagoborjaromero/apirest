@@ -11,8 +11,8 @@ class GrupoUsuarios extends Model
     use HasFactory;
     use SoftDeletes;
     public $timestamps = true;
-    protected $table = "idgrupo_usuario";
-    protected $primaryKey = "idmenu";
+    protected $table = "grupo_usuarios";
+    protected $primaryKey = "idgrupo_usuario";
     protected $fillable = [];
 
     // relacion idcliente

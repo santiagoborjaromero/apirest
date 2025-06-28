@@ -19,7 +19,18 @@ class Usuario extends Model
     public $timestamps = true;
     protected $table = "usuarios";
     protected $primaryKey = "idusuario";
-    protected $fillable = [];
+    // protected $fillable = [
+    //     "idrol",
+    //     "idgrupo_usuario",
+    //     "idcliente",
+    //     "estado",
+    //     "nombre",
+    //     "ntfy_identificador",
+    //     "email",
+    //     "usuario",
+    //     "clave"
+    // ];
+    protected $guarded = ["idusuario"];
     protected $hidden = ["clave","verificacion_codigo","verificacion_expira"];
 
     public function cliente(): BelongsTo
@@ -35,6 +46,11 @@ class Usuario extends Model
     public function roles(): BelongsTo
     {
         return $this->belongsTo(Roles::class, "idrol", "idrol");
+    }
+
+    public function grupo(): BelongsTo
+    {
+        return $this->belongsTo(GrupoUsuarios::class, "idgrupo_usuario", "idgrupo_usuario");
     }
    
 }

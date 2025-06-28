@@ -3,9 +3,11 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientesController;
 use App\Http\Controllers\ConfiguracionController;
+use App\Http\Controllers\GrupoUsuariosController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\UsuariosController;
 use App\Http\Middleware\EnsureTokenIsValid;
+use App\Models\GrupoUsuarios;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -44,6 +46,15 @@ Route::group([
     
     Route::get("usuarios", [UsuariosController::class, 'getAll']);
     Route::get("usuarios/{id}", [UsuariosController::class, 'getOne']);
+    Route::post("usuario", [UsuariosController::class, 'save']);
+    Route::put("usuario/{id}", [UsuariosController::class, 'update']);
+    Route::delete("usuario/{id}", [UsuariosController::class, 'delete']);
+    
+    Route::get("grupousuarios", [GrupoUsuariosController::class, 'getAll']);
+    Route::get("grupousuarios/cliente/{id}", [GrupoUsuariosController::class, 'getAllFromClient']);
+
+
+
 
 // });
 });

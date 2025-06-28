@@ -76,7 +76,7 @@ class MenuController extends Controller
             // $record["es_submenu"] =  $request->input("es_submenu");
             // $record["estado"] =  $request->input("estado");
             try{
-                $data = Menu::created($record);
+                $data = Menu::create($record);
                 $status = true;
                 $aud->saveAuditoria([
                     "idusuario" => $payload->payload["idusuario"],

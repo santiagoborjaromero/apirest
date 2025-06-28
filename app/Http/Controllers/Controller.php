@@ -131,5 +131,17 @@ abstract class Controller
     }
 
 
+    static public function generacionClave(){
+        $caracteres = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $clave = '';
+        $longitud = 16;
+        $max = strlen($caracteres) - 1;
+        for ($i = 0; $i < $longitud; $i++) {
+            $clave .= $caracteres[random_int(0, $max)];
+        }
+        return $clave;
+    }
+
+
     
 }

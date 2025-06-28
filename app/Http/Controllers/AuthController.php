@@ -28,12 +28,12 @@ class AuthController extends Controller
         $data = null;
 
         $data = Usuario::where("usuario", $usuario)->where("estado", 1)
-            ->with("cliente", "roles", "roles.menu", "config")->get();
+            ->with("cliente", "roles", "roles.menu", "config", "grupo")
+            ->get();
 
         foreach ($data as $key => $value) {
             $rs = $value;
         }
-
 
         if (count($data)>0){
             $status = true;
@@ -46,7 +46,7 @@ class AuthController extends Controller
                 ]);
                 $status = false;
                 $data = [];
-                $newclave = $this->generacionClave();
+                $newclave = Controller::generacionClave();
                 $msg = $mensaje . " " . $newclave;
                 Controller::enviarMensaje($rs->idusuario, $msg);
                 $record["clave"] = Controller::encode($newclave);
@@ -140,7 +140,9 @@ class AuthController extends Controller
                                 /**
                                  * TODO: Cuando todo esta bien se genera codigo de verificación
                                  */
+                                error_log("Generando Codigo");
                                 $codigo = $this->generacionCodigoVerificacion($rs->idusuario);
+                                error_log("Enviando Codigo");
                                 Controller::enviarMensaje($rs->idusuario, "Codigo de verificacion para LISAH es: {$codigo}");
                                 $record["verificacion_codigo"] = $codigo;
                                 $record["verificacion_expira"] = date('Y-m-d H:i:s', (strtotime ("+5 Minute")));
@@ -178,7 +180,7 @@ class AuthController extends Controller
         $rec = [
             "idcliente" => $obj->idcliente,
             "idusuario" => $obj->idusuario,
-            "task" => $obj->idrol,
+            "idrol" => $obj->idrol,
             "expire_date" => date("Y-m-d H:i:s", strtotime('+1 day'))
         ];
         error_log(json_encode($rec));
@@ -209,16 +211,6 @@ class AuthController extends Controller
         return ["validate" => $conclusion, "mensaje" => $msg];
     }
 
-    public function generacionClave(){
-        $caracteres = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $clave = '';
-        $longitud = 16;
-        $max = strlen($caracteres) - 1;
-        for ($i = 0; $i < $longitud; $i++) {
-            $clave .= $caracteres[random_int(0, $max)];
-        }
-        return $clave;
-    }
 
     public function regenerarCodigo(Request $request){
         $status = false;
