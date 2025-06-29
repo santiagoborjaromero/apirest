@@ -38,4 +38,6 @@ class Roles extends Model
         // );
         return $this->belongsToMany(Menu::class, 'rol_menu', 'idrol', 'idmenu');
     }
+
+    
 }

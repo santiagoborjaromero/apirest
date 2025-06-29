@@ -49,15 +49,15 @@ Route::group([
     Route::get("clientes/{id}", [ClientesController::class, 'getOne']);
     
     Route::get("usuarios", [UsuariosController::class, 'getAll']);
-    Route::get("usuarios_filter/{accion}", [UsuariosController::class, 'getAllFiltro']);
     Route::get("usuarios/{id}", [UsuariosController::class, 'getOne']);
+    Route::get("usuarios_filter/{accion}", [UsuariosController::class, 'getAllFiltro']);
     Route::post("usuario", [UsuariosController::class, 'save']);
     Route::put("usuario/{id}", [UsuariosController::class, 'update']);
     Route::delete("usuario/{id}", [UsuariosController::class, 'delete']);
     
     Route::get("grupousuarios", [GrupoUsuariosController::class, 'getAll']);
+    Route::get("grupousuarios/{id}", [GrupoUsuariosController::class, 'getAll']);
+    Route::get("grupousuarios_filter/{action}", [GrupoUsuariosController::class, 'getAllFiltro']);
     Route::get("grupousuarios/cliente/{id}", [GrupoUsuariosController::class, 'getAllFromClient']);
 
-
-// });
 });
