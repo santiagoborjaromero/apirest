@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreUsuariosRequest;
 use App\Http\Requests\UpdateUsuariosRequest;
+use App\Mail\EnvioMails;
 use App\Models\Usuario;
 use Exception;
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Mail;
 
 class UsuariosController extends Controller
 {
@@ -24,7 +25,7 @@ class UsuariosController extends Controller
             $status = true;
             if ( $payload->payload["idcliente"] === null){
                 if ($payload->payload["idrol"] == 1){
-                    $data = Usuario::withTrashed()->with("cliente", "roles", "roles.menu", "grupo")->get();
+                    $data = Usuario::with("cliente", "roles", "roles.menu", "grupo")->get();
                 } else {
                     //$data = Usuario::where("idrol", '>', 1)->with("cliente", "roles", "roles.menu", "grupo")->get();
                     //estaparte es de resellers para deben seleccionar su cliente y los childs de ese cliente
@@ -32,6 +33,60 @@ class UsuariosController extends Controller
             }else{
                 $data = Usuario::where("idcliente", $payload->payload["idcliente"])
                     ->with("cliente", "roles", "roles.menu", "grupo")->get();
+            }
+
+            unset($data->token);
+        }else{
+            $status = false;
+            $mensaje = $payload->mensaje;
+        }
+
+
+        return Controller::reponseFormat($status, $data, $mensaje) ;
+    }
+
+    public function getAllFiltro(Request $request, $accion)
+    {
+        $payload = (Object)Controller::tokenSecurity($request);
+        $status = false;
+        $data = [];
+        $mensaje="";
+
+        if ($payload->validate){
+            $status = true;
+            if ( $payload->payload["idcliente"] === null){
+                if ($payload->payload["idrol"] == 1){
+                    switch ($accion){
+                        case 'activos':
+                            $data = Usuario::with("cliente", "roles", "roles.menu", "grupo")->get();
+                            break;
+                        case 'inactivos':
+                            $data = Usuario::onlyTrashed()->with("cliente", "roles", "roles.menu", "grupo")->get();
+                            break;
+                        case 'todos':
+                            $data = Usuario::withTrashed()->with("cliente", "roles", "roles.menu", "grupo")->get();
+                            break;
+                    }
+                } else {
+                    //$data = Usuario::where("idrol", '>', 1)->with("cliente", "roles", "roles.menu", "grupo")->get();
+                    //estaparte es de resellers para deben seleccionar su cliente y los childs de ese cliente
+                }
+            }else{
+                switch ($accion){
+                    case 'activos':
+                        $data = Usuario::where("idcliente", $payload->payload["idcliente"])
+                            ->with("cliente", "roles", "roles.menu", "grupo")->get();
+                        break;
+                    case 'inactivos':
+                        $data = Usuario::onlyTrashed()->where("idcliente", $payload->payload["idcliente"])
+                            ->with("cliente", "roles", "roles.menu", "grupo")->get();
+                        break;
+                    case 'todos':
+                        $data = Usuario::withTrashed()->where("idcliente", $payload->payload["idcliente"])
+                            ->with("cliente", "roles", "roles.menu", "grupo")->get();
+                        break;
+                }
+                
             }
 
             unset($data->token);
@@ -180,6 +235,13 @@ class UsuariosController extends Controller
         }
         return Controller::reponseFormat($status, $data, $mensaje) ;
     }
+
+    static public function envioMails(Request $request){
+        Mail::to('jsantiagoborjar@gmail.com')->send(new EnvioMails);
+    }
+    
+
+
 
 
 }

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\EnvioMails;
 use App\Models\Cliente;
 use App\Models\Configuracion;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Mail;
 
 abstract class Controller
 {
@@ -143,5 +145,5 @@ abstract class Controller
     }
 
 
-    
+   
 }

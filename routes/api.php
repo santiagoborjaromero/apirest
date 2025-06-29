@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientesController;
 use App\Http\Controllers\ConfiguracionController;
+use App\Http\Controllers\Controller;
 use App\Http\Controllers\GrupoUsuariosController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\UsuariosController;
@@ -21,6 +22,9 @@ Route::group(["prefix"=>"v1", "namespace" => "App\Http\Controller"], function ()
         return ["status" => true, "data" => "Estado server activo"];
     });
     Route::post("login", [AuthController::class, 'authUser']);
+    Route::get("email", [UsuariosController::class, 'envioMails']);
+
+
     
 });
 
@@ -45,6 +49,7 @@ Route::group([
     Route::get("clientes/{id}", [ClientesController::class, 'getOne']);
     
     Route::get("usuarios", [UsuariosController::class, 'getAll']);
+    Route::get("usuarios_filter/{accion}", [UsuariosController::class, 'getAllFiltro']);
     Route::get("usuarios/{id}", [UsuariosController::class, 'getOne']);
     Route::post("usuario", [UsuariosController::class, 'save']);
     Route::put("usuario/{id}", [UsuariosController::class, 'update']);
@@ -52,8 +57,6 @@ Route::group([
     
     Route::get("grupousuarios", [GrupoUsuariosController::class, 'getAll']);
     Route::get("grupousuarios/cliente/{id}", [GrupoUsuariosController::class, 'getAllFromClient']);
-
-
 
 
 // });
