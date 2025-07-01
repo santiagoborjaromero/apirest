@@ -6,6 +6,7 @@ use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\GrupoUsuariosController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\RolMenuController;
 use App\Http\Controllers\UsuariosController;
 use App\Http\Middleware\EnsureTokenIsValid;
 use App\Models\GrupoUsuarios;
@@ -54,10 +55,17 @@ Route::group([
     Route::post("usuario", [UsuariosController::class, 'save']);
     Route::put("usuario/{id}", [UsuariosController::class, 'update']);
     Route::delete("usuario/{id}", [UsuariosController::class, 'delete']);
+    Route::put("usuario_recuperar/{id}", [UsuariosController::class, 'recovery']);
     
     Route::get("grupousuarios", [GrupoUsuariosController::class, 'getAll']);
-    Route::get("grupousuarios/{id}", [GrupoUsuariosController::class, 'getAll']);
+    Route::get("grupousuarios/{id}", [GrupoUsuariosController::class, 'getOne']);
     Route::get("grupousuarios_filter/{action}", [GrupoUsuariosController::class, 'getAllFiltro']);
     Route::get("grupousuarios/cliente/{id}", [GrupoUsuariosController::class, 'getAllFromClient']);
+    Route::post("grupousuario", [GrupoUsuariosController::class, 'save']);
+    Route::put("grupousuario/{id}", [GrupoUsuariosController::class, 'update']);
+    Route::delete("grupousuario/{id}", [GrupoUsuariosController::class, 'delete']);
+    Route::put("grupousuario_recuperar/{id}", [GrupoUsuariosController::class, 'recovery']);
 
+
+    Route::get("rolmenu_client", [RolMenuController::class, 'getMenuByClient']);
 });

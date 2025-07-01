@@ -54,6 +54,8 @@ class MenuController extends Controller
         return Controller::reponseFormat($status, $data, $mensaje) ;
     }
 
+   
+
     public function saveNew(Request $request)
     {
         $aud = new AuditoriaUsoController();

@@ -18,7 +18,7 @@ class GrupoUsuarios extends Model
     public $timestamps = true;
     protected $table = "grupo_usuarios";
     protected $primaryKey = "idgrupo_usuario";
-    protected $fillable = [];
+    protected $guarded = ["idgrupo_usuario","created_at", "updated_at"];
 
     public function cliente(): BelongsTo
     {

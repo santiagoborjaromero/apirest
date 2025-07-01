@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class RolMenuGrupos extends Model
 {
     use HasFactory;
-    use SoftDeletes;
+    // use SoftDeletes;
     public $timestamps = true;
     protected $table = "rolmenu_grupos";
     protected $primaryKey = "idrolmenu_grupos";

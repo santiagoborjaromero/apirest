@@ -236,6 +236,37 @@ class UsuariosController extends Controller
         return Controller::reponseFormat($status, $data, $mensaje) ;
     }
 
+    public function recovery(Request $request, $id)
+    {
+        $aud = new AuditoriaUsoController();
+        
+        $status = false;
+        $data = [];
+        $mensaje = "";
+
+        $payload = (Object) Controller::tokenSecurity($request);
+        if (!$payload->validate){
+            $status = false;
+            $mensaje = $payload->mensaje;
+        }else{
+            if ($id !=""){
+                $status = true;
+                $data = [];
+                Usuario::where("idusuario", $id)->update(["estado"=>1]);
+                Usuario::where("idusuario", $id)->restore();
+                $aud->saveAuditoria([
+                    "idusuario" => $payload->payload["idusuario"],
+                ]);
+            } else {
+                $status = false;
+                $mensaje = "ID se encuentra vacío";
+            }
+        }
+        return Controller::reponseFormat($status, $data, $mensaje) ;
+    }
+
+
+
     static public function envioMails(Request $request){
         Mail::to('jsantiagoborjar@gmail.com')->send(new EnvioMails);
     }
