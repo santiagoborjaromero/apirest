@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TemplateComandos extends Model
@@ -13,9 +14,12 @@ class TemplateComandos extends Model
     public $timestamps = true;
     protected $table = "template_comandos";
     protected $primaryKey = "idtemplate_comando";
-    protected $fillable = [];
+    protected $guarded = ["idtemplate_comando"];
     protected $hidden = [];
 
-    //Relacion con 1 idCliente varios templates
+    public function cliente(): BelongsTo
+    {
+        return $this->belongsTo(Cliente::class, "idcliente", "idcliente");
+    }
 
 }

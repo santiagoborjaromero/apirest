@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Servidores extends Model
@@ -13,8 +14,13 @@ class Servidores extends Model
     public $timestamps = true;
     protected $table = "servidores";
     protected $primaryKey = "idservidor";
-    protected $fillable = [];
+    protected $guarded = ["idservidor"];
     protected $hidden = [];
 
-    //Relacion con 1 idCliente varios servidores
+    public function cliente(): BelongsTo
+    {
+        return $this->belongsTo(Cliente::class, "idcliente", "idcliente");
+    }
+
+    
 }

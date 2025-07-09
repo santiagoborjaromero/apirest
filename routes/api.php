@@ -7,7 +7,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\GrupoUsuariosController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RolMenuController;
+use App\Http\Controllers\ScriptsController;
+use App\Http\Controllers\ServidoresController;
+use App\Http\Controllers\TemplateComandosController;
 use App\Http\Controllers\UsuariosController;
+use App\Http\Controllers\VariablesController;
 use App\Http\Middleware\EnsureTokenIsValid;
 use App\Models\GrupoUsuarios;
 use Illuminate\Http\Request;
@@ -66,6 +70,19 @@ Route::group([
     Route::delete("grupousuario/{id}", [GrupoUsuariosController::class, 'delete']);
     Route::put("grupousuario_recuperar/{id}", [GrupoUsuariosController::class, 'recovery']);
 
-
     Route::get("rolmenu_client", [RolMenuController::class, 'getMenuByClient']);
+
+    
+    Route::get("servidores", [ServidoresController::class, 'getAll']);
+    Route::get("servidores/{id}", [ServidoresController::class, 'getOne']);
+    Route::get("servidores_filter/{accion}", [ServidoresController::class, 'getAllFiltro']);
+    
+    Route::get("variables", [VariablesController::class, 'getAll']);
+    
+    Route::get("templates", [TemplateComandosController::class, 'getAll']);
+    Route::get("templates_filter/{accion}", [TemplateComandosController::class, 'getAllFiltro']);
+    
+    Route::get("scripts", [ScriptsController::class, 'getAll']);
+    Route::get("scripts/{id}", [ScriptsController::class, 'getOne']);
+    Route::get("scripts_filter/{accion}", [ScriptsController::class, 'getAllFiltro']);
 });

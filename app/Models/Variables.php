@@ -13,7 +13,7 @@ class Variables extends Model
     public $timestamps = true;
     protected $table = "variables";
     protected $primaryKey = "idvariable";
-    protected $fillable = [];
+    protected $guarded = ["idvariable"];
     protected $hidden = [];
 
 }
