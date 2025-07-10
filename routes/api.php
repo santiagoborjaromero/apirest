@@ -85,4 +85,10 @@ Route::group([
     Route::get("scripts", [ScriptsController::class, 'getAll']);
     Route::get("scripts/{id}", [ScriptsController::class, 'getOne']);
     Route::get("scripts_filter/{accion}", [ScriptsController::class, 'getAllFiltro']);
+    Route::post("script", [ScriptsController::class, 'save']);
+    Route::put("script/{id}", [ScriptsController::class, 'update']);
+    Route::delete("script/{id}", [ScriptsController::class, 'delete']);
+    // Route::put("script_recuperar/{id}", [ScriptsController::class, 'recovery']);
+
+    
 });

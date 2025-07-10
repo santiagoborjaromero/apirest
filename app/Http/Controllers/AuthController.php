@@ -223,7 +223,7 @@ class AuthController extends Controller
             $data = [];
             $mensaje = "Código generado";
             $codigo = $this->generacionCodigoVerificacion($payload->payload["idusuario"]);
-            Controller::enviarMensaje($payload->payload["idusuario"], "Codigo de verificacion para LISAH es: {$codigo}");
+            Controller::enviarMensaje($->payload["idusuario"], "Codigo de verificacion para LISAH es: {$codigo}");
             $record["verificacion_codigo"] = $codigo;
             $record["verificacion_expira"] = date('Y-m-d H:i:s', (strtotime ("+5 Minute")));
             Usuario::where("idusuario", $payload->payload["idusuario"])->update(json_decode(json_encode($record),true));

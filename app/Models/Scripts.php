@@ -12,14 +12,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Scripts extends Model
 {
     use HasFactory;
-    use SoftDeletes;
+    // use SoftDeletes;
     public $timestamps = true;
     protected $table = "scripts";
     protected $primaryKey = "idscript";
     protected $guarded = ["idscript"];
-    protected $hidden = [];
 
-    //Relacion con 1 idCliente varios scripts
     public function comandos(): HasMany
     {
         return $this->hasMany(ScriptComandos::class, "idscript", "idscript");
@@ -27,7 +25,8 @@ class Scripts extends Model
 
     public function cmds(): BelongsToMany
     {
-        return $this->belongsToMany(TemplateComandos::class, 'script_comandos', 'idscript', 'idtemplate_comando');
+        // return $this->belongsToMany(TemplateComandos::class, 'script_comandos', 'idscript', 'idtemplate_comando');
+        return $this->belongsToMany(TemplateComandos::class, 'script_comandos', 'idscript', 'idtemplate_comando')->orderBy('orden', 'asc');
     }
 
 

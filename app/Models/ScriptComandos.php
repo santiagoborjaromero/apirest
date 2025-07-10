@@ -12,12 +12,11 @@ class ScriptComandos extends Model
 {
     
     use HasFactory;
-    use SoftDeletes;
+    // use SoftDeletes;
     public $timestamps = true;
     protected $table = "script_comandos";
     protected $primaryKey = "idscript_comando";
     protected $guarded = ["idscript_comando"];
-    protected $hidden = [];
 
     // relacion con idscript
     // relacion con idtemplate_comando
