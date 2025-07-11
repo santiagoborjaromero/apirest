@@ -52,5 +52,10 @@ class Usuario extends Model
     {
         return $this->belongsTo(GrupoUsuarios::class, "idgrupo_usuario", "idgrupo_usuario");
     }
+
+    public function servidores(): BelongsToMany
+    {
+        return $this->belongsToMany(Servidores::class, 'servidor_usuarios', 'idusuario', 'idservidor');
+    }
    
 }

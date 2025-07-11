@@ -25,14 +25,14 @@ class UsuariosController extends Controller
             $status = true;
             if ( $payload->payload["idcliente"] === null){
                 if ($payload->payload["idrol"] == 1){
-                    $data = Usuario::with("cliente", "roles", "roles.menu", "grupo")->get();
+                    $data = Usuario::with("cliente", "servidores", "roles", "roles.menu", "grupo")->get();
                 } else {
                     //$data = Usuario::where("idrol", '>', 1)->with("cliente", "roles", "roles.menu", "grupo")->get();
                     //estaparte es de resellers para deben seleccionar su cliente y los childs de ese cliente
                 }
             }else{
                 $data = Usuario::where("idcliente", $payload->payload["idcliente"])
-                    ->with("cliente", "roles", "roles.menu", "grupo")->get();
+                    ->with("cliente", "servidores", "roles", "roles.menu", "grupo")->get();
             }
 
             unset($data->token);
@@ -58,13 +58,13 @@ class UsuariosController extends Controller
                 if ($payload->payload["idrol"] == 1){
                     switch ($accion){
                         case 'activos':
-                            $data = Usuario::with("cliente", "roles", "roles.menu", "grupo")->get();
+                            $data = Usuario::with("cliente","servidores",  "roles", "roles.menu", "grupo")->get();
                             break;
                         case 'inactivos':
-                            $data = Usuario::onlyTrashed()->with("cliente", "roles", "roles.menu", "grupo")->get();
+                            $data = Usuario::onlyTrashed()->with("cliente", "servidores", "roles", "roles.menu", "grupo")->get();
                             break;
                         case 'todos':
-                            $data = Usuario::withTrashed()->with("cliente", "roles", "roles.menu", "grupo")->get();
+                            $data = Usuario::withTrashed()->with("cliente", "servidores", "roles", "roles.menu", "grupo")->get();
                             break;
                     }
                 } else {
@@ -75,15 +75,15 @@ class UsuariosController extends Controller
                 switch ($accion){
                     case 'activos':
                         $data = Usuario::where("idcliente", $payload->payload["idcliente"])
-                            ->with("cliente", "roles", "roles.menu", "grupo")->get();
+                            ->with("cliente",  "servidores", "roles", "roles.menu", "grupo")->get();
                         break;
                     case 'inactivos':
                         $data = Usuario::onlyTrashed()->where("idcliente", $payload->payload["idcliente"])
-                            ->with("cliente", "roles", "roles.menu", "grupo")->get();
+                            ->with("cliente",  "servidores", "roles", "roles.menu", "grupo")->get();
                         break;
                     case 'todos':
                         $data = Usuario::withTrashed()->where("idcliente", $payload->payload["idcliente"])
-                            ->with("cliente", "roles", "roles.menu", "grupo")->get();
+                            ->with("cliente", "servidores",  "roles", "roles.menu", "grupo")->get();
                         break;
                 }
                 
@@ -110,7 +110,7 @@ class UsuariosController extends Controller
             $status = true;
             if (isset($id)){
                 $status = true;
-                $data = Usuario::where("idusuario", $id)->with("cliente", "roles")->get();
+                $data = Usuario::where("idusuario", $id)->with("cliente", "servidores", "roles")->get();
             }else{
                 $data = [];
                 $mensaje = "ID del usuario esta vacío";
