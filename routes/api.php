@@ -49,7 +49,6 @@ Route::group([
     Route::get("config", [ConfiguracionController::class, 'getAll']);
     Route::put("config", [ConfiguracionController::class, 'update']);
 
-
     Route::get("clientes", [ClientesController::class, 'getAll']);
     Route::get("clientes/{id}", [ClientesController::class, 'getOne']);
     
@@ -76,6 +75,11 @@ Route::group([
     Route::get("servidores", [ServidoresController::class, 'getAll']);
     Route::get("servidores/{id}", [ServidoresController::class, 'getOne']);
     Route::get("servidores_filter/{accion}", [ServidoresController::class, 'getAllFiltro']);
+    Route::post("servidor", [ServidoresController::class, 'save']);
+    Route::put("servidor/{id}", [ServidoresController::class, 'update']);
+    Route::delete("servidor/{id}", [ServidoresController::class, 'delete']);
+    Route::put("servidor_recuperar/{id}", [ServidoresController::class, 'recovery']);
+    Route::post("healthy_server", [ServidoresController::class, 'healthyServers']);
     
     Route::get("variables", [VariablesController::class, 'getAll']);
     
