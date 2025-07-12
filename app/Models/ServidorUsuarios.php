@@ -9,10 +9,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class ServidorUsuarios extends Model
 {
     use HasFactory;
-    use SoftDeletes;
+    // use SoftDeletes;
     public $timestamps = true;
     protected $table = "servidor_usuarios";
     protected $primaryKey = "idservidor_usuario";
-    protected $fillable = [];
-    protected $hidden = [];
+    protected $fillable = ["idservidor_usuario"];
 }

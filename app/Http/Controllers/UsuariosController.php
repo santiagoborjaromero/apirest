@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreUsuariosRequest;
 use App\Http\Requests\UpdateUsuariosRequest;
 use App\Mail\EnvioMails;
+use App\Models\Servidores;
+use App\Models\ServidorUsuarios;
 use App\Models\Usuario;
 use Exception;
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 class UsuariosController extends Controller
@@ -110,7 +113,7 @@ class UsuariosController extends Controller
             $status = true;
             if (isset($id)){
                 $status = true;
-                $data = Usuario::where("idusuario", $id)->with("cliente", "servidores", "roles")->get();
+                $data = Usuario::where("idusuario", $id)->with("cliente", "servidores", "roles", "grupo")->get();
             }else{
                 $data = [];
                 $mensaje = "ID del usuario esta vacío";
@@ -140,9 +143,43 @@ class UsuariosController extends Controller
                 if (count($rs)==0){
                     $newclave = Controller::generacionClave();
                     $msg =  "LISAH le da la bienvenida ". $record["nombre"] . ", su usuario es =" . $record["usuario"] . " y nueva contraseña es = " . $newclave;
-                    $record["clave"] = Controller::encode($newclave);
-                    $record["clave_expiracion"] = date("Y-m-d H:i:s", strtotime('+1 year'));
-                    $data = Usuario::create($record);
+                    $clave = Controller::encode($newclave);
+                    $clave_expiracion = date("Y-m-d H:i:s", strtotime('+1 year'));
+
+                    $idrol = $record["idrol"];
+                    $idgrupo_usuario = $record["idgrupo_usuario"];
+                    $idcliente = $record["idcliente"];
+                    $estado = $record["estado"];
+                    $nombre = $record["nombre"];
+                    $usuario = $record["usuario"];
+                    $ntfy_identificador = $record["ntfy_identificador"];
+                    $email = $record["email"];
+                    $servidores = $record["servidores"];
+
+                    $record_u = [
+                        "idrol" => $idrol,
+                        "idgrupo_usuario" => $idgrupo_usuario,
+                        "idcliente" => $idcliente,
+                        "estado" => $estado,
+                        "nombre" => $nombre,
+                        "usuario" => $usuario,
+                        "ntfy_identificador" => $ntfy_identificador,
+                        "email" => $email,
+                        "clave" => $clave,
+                        "clave_expiracion" => $clave_expiracion,
+                    ];
+                    $data =  Usuario::create($record_u);
+
+                    $record_srv = [];
+                    foreach ($servidores as $key => $value) {
+                        $record_srv[] = [
+                            "idservidor" => $value["idservidor"],
+                            "idusuario" => $data["idusuario"],
+                        ];
+                    }
+                    // $data_del = ServidorUsuarios::where("idusuario", $data["idusuario"])->delete();
+                    $data_srv = DB::table("servidor_usuarios")->insert($record_srv);
+
                     Controller::enviarMensaje($data["idusuario"], $msg);
                     $status = true;
                 } else{
@@ -179,8 +216,40 @@ class UsuariosController extends Controller
                 $mensaje = "El ID está vacío";
             }else{
                 try{
-                    $record = json_decode(json_encode($request->input("data")), true) ;
-                    $data = Usuario::where("idusuario", $id)->update($record);
+                    // $record = json_decode(json_encode($request->input("data")), true) ;
+                    $record = $request->input("data");
+                    $idrol = $record["idrol"];
+                    $idgrupo_usuario = $record["idgrupo_usuario"];
+                    $idcliente = $record["idcliente"];
+                    $estado = $record["estado"];
+                    $nombre = $record["nombre"];
+                    $usuario = $record["usuario"];
+                    $ntfy_identificador = $record["ntfy_identificador"];
+                    $email = $record["email"];
+                    $servidores = $record["servidores"];
+
+                    $record_u = [
+                        "idrol" => $idrol,
+                        "idgrupo_usuario" => $idgrupo_usuario,
+                        "idcliente" => $idcliente,
+                        "estado" => $estado,
+                        "nombre" => $nombre,
+                        "usuario" => $usuario,
+                        "ntfy_identificador" => $ntfy_identificador,
+                        "email" => $email,
+                    ];
+                    $data = Usuario::where("idusuario", $id)->update($record_u);
+
+                    $record_srv = [];
+                    foreach ($servidores as $key => $value) {
+                        $record_srv[] = [
+                            "idservidor" => $value["idservidor"],
+                            "idusuario" => $id,
+                        ];
+                    }
+                    $data_del = ServidorUsuarios::where("idusuario", $id)->delete();
+                    $data_srv = DB::table("servidor_usuarios")->insert($record_srv);
+
                     $status = true;
                 } catch (Exception $err){
                     $status = false;
