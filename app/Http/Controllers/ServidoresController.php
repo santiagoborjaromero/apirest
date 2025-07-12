@@ -261,8 +261,8 @@ class ServidoresController extends Controller
                     ->get();
 
                 if(count($data)>0){
-                    $ssh          = SSH::run();
-                    print_r($ssh);
+                    // $ssh          = SSH::run();
+                    // print_r($ssh);
                     // $login        = ssh2_auth_password($ssh, SFTP_USER, SFTP_PASS);
                     // $sftp         = ssh2_sftp($ssh);
                     // $sftp_fd      = intval($sftp);
