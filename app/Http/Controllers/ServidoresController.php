@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Servidores;
-use App\Http\Requests\StoreServidoresRequest;
-use App\Http\Requests\UpdateServidoresRequest;
 use App\Models\Usuario;
 use Carbon\Exceptions\Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use phpseclib3\Crypt\RSA\Formats\Keys\OpenSSH;
+use phpseclib3\Net\SSH2;
 
 class ServidoresController extends Controller
 {
@@ -83,7 +83,7 @@ class ServidoresController extends Controller
     public function save(Request $request)
     {
         $aud = new AuditoriaUsoController();
-        
+
         $status = false;
         $data = [];
         $mensaje = "";
@@ -102,7 +102,7 @@ class ServidoresController extends Controller
             $record_g["host"] =  $record["host"];
             $record_g["puerto"] =  $record["puerto"];
             $record_g["idscript_nuevo"] =  $record["idscript_nuevo"];
-            
+
             try{
                 $data = Servidores::create($record_g);
                 $status = true;
@@ -123,7 +123,7 @@ class ServidoresController extends Controller
     public function update(Request $request, $id)
     {
         $aud = new AuditoriaUsoController();
-        
+
         $status = false;
         $data = [];
         $mensaje = "";
@@ -143,11 +143,11 @@ class ServidoresController extends Controller
                 $record_g["host"] =  $record["host"];
                 $record_g["puerto"] =  $record["puerto"];
                 $record_g["idscript_nuevo"] =  $record["idscript_nuevo"];
-    
+
                 try{
                     $data = Servidores::where("idservidor", $id)->update($record_g);
                     $status = true;
-                    
+
                 } catch( Exception $err){
                     $status = false;
                     $mensaje = $err;
@@ -168,7 +168,7 @@ class ServidoresController extends Controller
     public function delete(Request $request, $id)
     {
         $aud = new AuditoriaUsoController();
-        
+
         $status = false;
         $data = [];
         $mensaje = "";
@@ -197,7 +197,7 @@ class ServidoresController extends Controller
     public function recovery(Request $request, $id)
     {
         $aud = new AuditoriaUsoController();
-        
+
         $status = false;
         $data = [];
         $mensaje = "";
@@ -224,9 +224,9 @@ class ServidoresController extends Controller
 
 
     public function healthyServers(Request $request){
-        
+
         $aud = new AuditoriaUsoController();
-        
+
         $status = false;
         $data = [];
         $mensaje = "";
@@ -240,7 +240,8 @@ class ServidoresController extends Controller
             if ($record["puerto"] !="" && $record["host"] != ""){
 
                 $host = $record["host"];
-                $puerto = $record["puerto"];
+                $port = $record["puerto"];
+                // $port = "0000";
 
                 $data = Usuario::where("idusuario", $payload->payload["idusuario"])->get();
                 foreach ($data as $key => $value) {
@@ -249,38 +250,32 @@ class ServidoresController extends Controller
 
                 $user = $rs["usuario"];
                 $password = Controller::decode($rs["clave"]);
-                $cmd = "ls /";
 
-                echo "{$host} {$puerto} {$user} {$password}";
-                die();
+                $tiempo_inicio = microtime(true);
+                try{
+                    $ssh = new SshController($host, $port, $user, $password);
+                    $data = $ssh->run("ls /");
+                    if (!$data) {
+                        $status = false;
+                        $tiempo_fin = microtime(true);
+                        $tiempo_transcurrido = round( $tiempo_fin - $tiempo_inicio ,2);
+                        $mensaje = "Servidor {$host}:{$port} con usuario: {$user}, no respondio al login SSH. {$tiempo_transcurrido} seg";
+                    }else{
+                        $tiempo_fin = microtime(true);
+                        $tiempo_transcurrido = round( $tiempo_fin - $tiempo_inicio ,2);
+                        $data = "Servidor {$host}:{$port} con usuario: {$user}, respondio correctamente al login SSH. {$tiempo_transcurrido} seg";
+                        $status = true;
 
-                $status = true;
-                $data = [];
-                $data = Servidores::where("host", $host)
-                    ->where("puerto", $puerto)
-                    ->get();
-
-                if(count($data)>0){
-                    // $ssh          = SSH::run();
-                    // print_r($ssh);
-                    // $login        = ssh2_auth_password($ssh, SFTP_USER, SFTP_PASS);
-                    // $sftp         = ssh2_sftp($ssh);
-                    // $sftp_fd      = intval($sftp);
-                    // $filesystem   = opendir("ssh2.sftp://$sftp_fd/.");
-
-
-                }else{
-
+                        // $data = $ssh->run("pwd");
+                    }
+                }catch(Exception $err){
+                    $status = false;
+                    $mensaje = $err;
                 }
 
-                // shell_exec("ssh user@host.com mkdir /testing");
-
-                // $aud->saveAuditoria([
-                //     "idusuario" => $payload->payload["idusuario"],
-                // ]);
             } else {
                 $status = false;
-                $mensaje = "El hosto o el puerto estan vacíos";
+                $mensaje = "El host o el puerto estan vacíos";
             }
         }
         return Controller::reponseFormat($status, $data, $mensaje) ;
