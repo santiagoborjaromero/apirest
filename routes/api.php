@@ -85,6 +85,11 @@ Route::group([
     
     Route::get("templates", [TemplateComandosController::class, 'getAll']);
     Route::get("templates_filter/{accion}", [TemplateComandosController::class, 'getAllFiltro']);
+    Route::get("templates/{id}", [TemplateComandosController::class, 'getOne']);
+    Route::post("template", [TemplateComandosController::class, 'save']);
+    Route::put("template/{id}", [TemplateComandosController::class, 'update']);
+    Route::delete("template/{id}", [TemplateComandosController::class, 'delete']);
+    Route::put("template_recuperar/{id}", [TemplateComandosController::class, 'recovery']);
     
     Route::get("scripts", [ScriptsController::class, 'getAll']);
     Route::get("scripts/{id}", [ScriptsController::class, 'getOne']);

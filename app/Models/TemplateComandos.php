@@ -15,7 +15,6 @@ class TemplateComandos extends Model
     protected $table = "template_comandos";
     protected $primaryKey = "idtemplate_comando";
     protected $guarded = ["idtemplate_comando"];
-    protected $hidden = [];
 
     public function cliente(): BelongsTo
     {

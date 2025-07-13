@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\TemplateComandos;
 use App\Http\Requests\StoreTemplateComandosRequest;
 use App\Http\Requests\UpdateTemplateComandosRequest;
+use Exception;
 use Illuminate\Http\Request;
 
 class TemplateComandosController extends Controller
@@ -53,215 +54,155 @@ class TemplateComandosController extends Controller
         return Controller::reponseFormat($status, $data, $mensaje) ;
     }
 
-    // public function getAllFromClient(Request $request, $id)
-    // {
-    //     $status = false;
-    //     $data = [];
-    //     $mensaje = "";
-    //     $payload = (Object) Controller::tokenSecurity($request);
-    //     if ($payload->validate){
-    //         $status = true;
-    //         $data = GrupoUsuarios::where("idcliente", $id)->get();
-    //     }else{
-    //         $status = false;
-    //         $mensaje = $payload->mensaje;
-    //     }
-    //     return Controller::reponseFormat($status, $data, $mensaje) ;
-    // }
+    public function getOne(Request $request, $id)
+    {
+        $payload = (Object)Controller::tokenSecurity($request);
+        $status = false;
+        $data = [];
+        $mensaje="";
 
-    // public function getOne(Request $request, $id)
-    // {
-    //     $status = false;
-    //     $data = [];
-    //     $mensaje = "";
-    //     $payload = (Object) Controller::tokenSecurity($request);
-    //     if ($payload->validate){
-    //         $status = true;
-    //         $data = GrupoUsuarios::with("cliente", "usuarios", "rolmenugrupos.rolmenu.menu")->where("idgrupo_usuario", $id)->get();
-    //     }else{
-    //         $status = false;
-    //         $mensaje = $payload->mensaje;
-    //     }
-    //     return Controller::reponseFormat($status, $data, $mensaje) ;
-    // }
+        if ($payload->validate){
+            $status = true;
+            if (isset($id)){
+                $status = true;
+                $data = TemplateComandos::where("idtemplate_comando", $id)->get();
+            }else{
+                $data = [];
+                $mensaje = "ID esta vacío";
+            }
+        }else{
+            $status = false;
+            $mensaje = $payload->mensaje;
+        }
+        return Controller::reponseFormat($status, $data, $mensaje) ;
+    }
 
-    // public function save(Request $request)
-    // {
-    //     $aud = new AuditoriaUsoController();
+    public function save(Request $request)
+    {
+        $aud = new AuditoriaUsoController();
         
-    //     $status = false;
-    //     $data = [];
-    //     $mensaje = "";
+        $status = false;
+        $data = [];
+        $mensaje = "";
 
-    //     $payload = (Object) Controller::tokenSecurity($request);
-    //     if (!$payload->validate){
-    //         $status = false;
-    //         $mensaje = $payload->mensaje;
-    //     }else{
-    //         $record_g = [];
-    //         $record_g["idcliente"] =  $payload->payload["idcliente"];
-    //         $record_g["nombre"] =  $request->input("nombre");
-    //         $record_g["idgrupo"] =  $request->input("idgrupo");
-
-    //         $rolmenugrupos =  $request->input("rolmenugrupos");
-    //         try{
-    //             $data = GrupoUsuarios::create($record_g);
-    //             $status = true;
+        $payload = (Object) Controller::tokenSecurity($request);
+        if (!$payload->validate){
+            $status = false;
+            $mensaje = $payload->mensaje;
+        }else{
+            $record =  $request->input("data");
+            $record_g = [
+                "idcliente" => $payload->payload["idcliente"],
+                "linea_comando" => $record["linea_comando"],
+            ];
+            try{
+                $data = TemplateComandos::create($record_g);
+                $status = true;
                 
-    //         } catch( Exception $err){
-    //             $status = false;
-    //             $mensaje = $err;
-    //         }
-
-    //         $record = [];
-    //         foreach ($rolmenugrupos as $key => $value) {
-    //             $record[] = [
-    //                 "idgrupo_usuario" => $data["idgrupo_usuario"],
-    //                 "idrol_menu" => $value["idrol_menu"],
-    //                 "scope" => $value["scope"],
-    //             ];
-    //         }
-
-    //         try{
-    //             $data = DB::table("rolmenu_grupos")->insert($record);
-    //             $status = true;
-    //         } catch( Exception $err){
-    //             $status = false;
-    //             $mensaje = $err;
-    //         }
+            } catch( Exception $err){
+                $status = false;
+                $mensaje = $err;
+            }
             
-    //         $aud->saveAuditoria([
-    //             "idusuario" => $payload->payload["idusuario"],
-    //             "json" => [
-    //                 "grupo_usuario" => $record_g,
-    //                 "rolmenu_grupos" => $record
-    //             ]
-    //         ]);
+            $aud->saveAuditoria([
+                "idusuario" => $payload->payload["idusuario"],
+                "json" => $record
+            ]);
+        }
+        return Controller::reponseFormat($status, $data, $mensaje) ;
+    }
 
 
-    //     }
-    //     return Controller::reponseFormat($status, $data, $mensaje) ;
-    // }
-
-
-    // public function update(Request $request, $id)
-    // {
-    //     $aud = new AuditoriaUsoController();
+    public function update(Request $request, $id)
+    {
+        $aud = new AuditoriaUsoController();
         
-    //     $status = false;
-    //     $data = [];
-    //     $mensaje = "";
+        $status = false;
+        $data = [];
+        $mensaje = "";
 
-    //     $payload = (Object) Controller::tokenSecurity($request);
-    //     if (!$payload->validate){
-    //         $status = false;
-    //         $mensaje = $payload->mensaje;
-    //     }else{
-    //         if ($id !=""){
-    //             $record_g = [];
-    //             $record_g["idcliente"] =  $payload->payload["idcliente"];
-    //             $record_g["nombre"] =  $request->input("nombre");
-    //             $record_g["idgrupo"] =  $request->input("idgrupo");
-    
-    //             $rolmenugrupos =  $request->input("rolmenugrupos");
-    //             try{
-    //                 $data = GrupoUsuarios::where("idgrupo_usuario", $id)->update($record_g);
-    //                 $status = true;
+        $payload = (Object) Controller::tokenSecurity($request);
+        if (!$payload->validate){
+            $status = false;
+            $mensaje = $payload->mensaje;
+        }else{
+            if ($id !=""){
+                $record =  $request->input("data");
+                try{
+                    $data = TemplateComandos::where("idtemplate_comando", $id)->update($record);
+                    $status = true;
                     
-    //             } catch( Exception $err){
-    //                 $status = false;
-    //                 $mensaje = $err;
-    //             }
+                } catch( Exception $err){
+                    $status = false;
+                    $mensaje = $err;
+                }
 
-    //             RolMenuGrupos::where("idgrupo_usuario", $id)->delete();
-    
-    //             $record = [];
-    //             foreach ($rolmenugrupos as $key => $value) {
-    //                 $record[] = [
-    //                     "idgrupo_usuario" => $id,
-    //                     "idrol_menu" => $value["idrol_menu"],
-    //                     "scope" => $value["scope"],
-    //                 ];
-    //             }
-    
-    //             try{
-    //                 $data = DB::table("rolmenu_grupos")->insert($record);
-    //                 $status = true;
-    //             } catch( Exception $err){
-    //                 $status = false;
-    //                 $mensaje = $err;
-    //             }
-                
-    //             $aud->saveAuditoria([
-    //                 "idusuario" => $payload->payload["idusuario"],
-    //                 "json" => [
-    //                     "grupo_usuario" => $record_g,
-    //                     "rolmenu_grupos" => $record
-    //                 ]
-    //             ]);
-    //         } else {
-    //             $status = false;
-    //             $mensaje = "ID se encuentra vacío";
-    //         }
-    //     }
-    //     return Controller::reponseFormat($status, $data, $mensaje) ;
-    // }
+                $aud->saveAuditoria([
+                    "idusuario" => $payload->payload["idusuario"],
+                    "json" => $record
+                ]);
+            } else {
+                $status = false;
+                $mensaje = "ID se encuentra vacío";
+            }
+        }
+        return Controller::reponseFormat($status, $data, $mensaje) ;
+    }
 
 
-    // public function delete(Request $request, $id)
-    // {
-    //     $aud = new AuditoriaUsoController();
+    public function delete(Request $request, $id)
+    {
+        $aud = new AuditoriaUsoController();
         
-    //     $status = false;
-    //     $data = [];
-    //     $mensaje = "";
+        $status = false;
+        $data = [];
+        $mensaje = "";
 
-    //     $payload = (Object) Controller::tokenSecurity($request);
-    //     if (!$payload->validate){
-    //         $status = false;
-    //         $mensaje = $payload->mensaje;
-    //     }else{
-    //         if ($id !=""){
-    //             $status = true;
-    //             $data = [];
-    //             GrupoUsuarios::where("idgrupo_usuario", $id)->delete();
-    //             RolMenuGrupos::where("idgrupo_usuario", $id)->delete();
-    //             $aud->saveAuditoria([
-    //                 "idusuario" => $payload->payload["idusuario"],
-    //             ]);
-    //         } else {
-    //             $status = false;
-    //             $mensaje = "ID se encuentra vacío";
-    //         }
-    //     }
-    //     return Controller::reponseFormat($status, $data, $mensaje) ;
-    // }
+        $payload = (Object) Controller::tokenSecurity($request);
+        if (!$payload->validate){
+            $status = false;
+            $mensaje = $payload->mensaje;
+        }else{
+            if ($id !=""){
+                $status = true;
+                $data = [];
+                TemplateComandos::where("idtemplate_comando", $id)->delete();
+                $aud->saveAuditoria([
+                    "idusuario" => $payload->payload["idusuario"],
+                ]);
+            } else {
+                $status = false;
+                $mensaje = "ID se encuentra vacío";
+            }
+        }
+        return Controller::reponseFormat($status, $data, $mensaje) ;
+    }
 
-    // public function recovery(Request $request, $id)
-    // {
-    //     $aud = new AuditoriaUsoController();
+    public function recovery(Request $request, $id)
+    {
+        $aud = new AuditoriaUsoController();
         
-    //     $status = false;
-    //     $data = [];
-    //     $mensaje = "";
+        $status = false;
+        $data = [];
+        $mensaje = "";
 
-    //     $payload = (Object) Controller::tokenSecurity($request);
-    //     if (!$payload->validate){
-    //         $status = false;
-    //         $mensaje = $payload->mensaje;
-    //     }else{
-    //         if ($id !=""){
-    //             $status = true;
-    //             $data = [];
-    //             GrupoUsuarios::where("idgrupo_usuario", $id)->restore();
-    //             $aud->saveAuditoria([
-    //                 "idusuario" => $payload->payload["idusuario"],
-    //             ]);
-    //         } else {
-    //             $status = false;
-    //             $mensaje = "ID se encuentra vacío";
-    //         }
-    //     }
-    //     return Controller::reponseFormat($status, $data, $mensaje) ;
-    // }
+        $payload = (Object) Controller::tokenSecurity($request);
+        if (!$payload->validate){
+            $status = false;
+            $mensaje = $payload->mensaje;
+        }else{
+            if ($id !=""){
+                $status = true;
+                $data = [];
+                TemplateComandos::where("idtemplate_comando", $id)->restore();
+                $aud->saveAuditoria([
+                    "idusuario" => $payload->payload["idusuario"],
+                ]);
+            } else {
+                $status = false;
+                $mensaje = "ID se encuentra vacío";
+            }
+        }
+        return Controller::reponseFormat($status, $data, $mensaje) ;
+    }
 }
