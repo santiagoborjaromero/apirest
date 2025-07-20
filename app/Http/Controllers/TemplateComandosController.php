@@ -91,23 +91,33 @@ class TemplateComandosController extends Controller
             $mensaje = $payload->mensaje;
         }else{
             $record =  $request->input("data");
-            $record_g = [
-                "idcliente" => $payload->payload["idcliente"],
-                "linea_comando" => $record["linea_comando"],
-            ];
-            try{
-                $data = TemplateComandos::create($record_g);
-                $status = true;
-                
-            } catch( Exception $err){
+
+            $rs = TemplateComandos::where("idcliente", $payload->payload["idcliente"])
+                ->where("linea_comando", $record["linea_comando"])
+                ->get();
+
+            if (count($rs)>0){
                 $status = false;
-                $mensaje = $err;
+                $mensaje = "El comando ingresado ya está registrado";
+            } else {
+                $record_g = [
+                    "idcliente" => $payload->payload["idcliente"],
+                    "linea_comando" => $record["linea_comando"],
+                ];
+                try{
+                    $data = TemplateComandos::create($record_g);
+                    $status = true;
+                    
+                } catch( Exception $err){
+                    $status = false;
+                    $mensaje = $err;
+                }
+                
+                $aud->saveAuditoria([
+                    "idusuario" => $payload->payload["idusuario"],
+                    "json" => $record
+                ]);
             }
-            
-            $aud->saveAuditoria([
-                "idusuario" => $payload->payload["idusuario"],
-                "json" => $record
-            ]);
         }
         return Controller::reponseFormat($status, $data, $mensaje) ;
     }
