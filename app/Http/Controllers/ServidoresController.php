@@ -103,7 +103,6 @@ class ServidoresController extends Controller
             $record_g["ssh_puerto"] =  $record["ssh_puerto"];
             $record_g["agente_puerto"] =  $record["agente_puerto"];
             $record_g["comentarios"] =  $record["comentarios"];
-            // $record_g["idscript_nuevo"] =  $record["idscript_nuevo"];
 
             try{
                 $data = Servidores::create($record_g);
@@ -146,7 +145,6 @@ class ServidoresController extends Controller
                 $record_g["ssh_puerto"] =  $record["ssh_puerto"];
                 $record_g["agente_puerto"] =  $record["agente_puerto"];
                 $record_g["comentarios"] =  $record["comentarios"];
-                // $record_g["idscript_nuevo"] =  $record["idscript_nuevo"];
 
                 try{
                     $data = Servidores::where("idservidor", $id)->update($record_g);
