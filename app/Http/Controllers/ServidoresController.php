@@ -97,11 +97,13 @@ class ServidoresController extends Controller
 
             $record_g = [];
             $record_g["idcliente"] =  $payload->payload["idcliente"];
-            $record_g["localizacion"] =  $record["localizacion"];
+            $record_g["ubicacion"] =  $record["ubicacion"];
             $record_g["nombre"] =  $record["nombre"];
             $record_g["host"] =  $record["host"];
-            $record_g["puerto"] =  $record["puerto"];
-            $record_g["idscript_nuevo"] =  $record["idscript_nuevo"];
+            $record_g["ssh_puerto"] =  $record["ssh_puerto"];
+            $record_g["agente_puerto"] =  $record["agente_puerto"];
+            $record_g["comentarios"] =  $record["comentarios"];
+            // $record_g["idscript_nuevo"] =  $record["idscript_nuevo"];
 
             try{
                 $data = Servidores::create($record_g);
@@ -138,11 +140,13 @@ class ServidoresController extends Controller
 
                 $record_g = [];
                 $record_g["idcliente"] =  $payload->payload["idcliente"];
-                $record_g["localizacion"] =  $record["localizacion"];
+                $record_g["ubicacion"] =  $record["ubicacion"];
                 $record_g["nombre"] =  $record["nombre"];
                 $record_g["host"] =  $record["host"];
-                $record_g["puerto"] =  $record["puerto"];
-                $record_g["idscript_nuevo"] =  $record["idscript_nuevo"];
+                $record_g["ssh_puerto"] =  $record["ssh_puerto"];
+                $record_g["agente_puerto"] =  $record["agente_puerto"];
+                $record_g["comentarios"] =  $record["comentarios"];
+                // $record_g["idscript_nuevo"] =  $record["idscript_nuevo"];
 
                 try{
                     $data = Servidores::where("idservidor", $id)->update($record_g);
@@ -254,7 +258,9 @@ class ServidoresController extends Controller
                 $tiempo_inicio = microtime(true);
                 try{
                     $ssh = new SshController($host, $port, $user, $password);
-                    $data = $ssh->run("ls /");
+                    // $data = $ssh->run('uptime -p');
+                    $cmd = 'sec=$(( $(date +%s) - $(date -d "$(ps -p 1 -o lstart=)" +%s) )); d=$((sec/86400)); h=$(( (sec%86400)/3600 )); m=$(( (sec%3600)/60 )); s=$((sec%60)); printf "%02d:%02d:%02d:%02d\n" $d $h $m $s';
+                    $data = $ssh->run($cmd);
                     if (!$data) {
                         $status = false;
                         $tiempo_fin = microtime(true);
@@ -263,11 +269,26 @@ class ServidoresController extends Controller
                     }else{
                         $tiempo_fin = microtime(true);
                         $tiempo_transcurrido = round( $tiempo_fin - $tiempo_inicio ,2);
-                        $data = "Servidor {$host}:{$port} con usuario: {$user}, respondio correctamente al login SSH. {$tiempo_transcurrido} seg";
+                        // $data = "Servidor {$host}:{$port} con usuario: {$user}, respondio correctamente al login SSH. {$tiempo_transcurrido} seg";
+                        $data = str_replace("\n","",$data);
                         $status = true;
 
-                        // $data = $ssh->run("pwd");
+                        // try{
+                        //     Servidores::where("host", $host)
+                        //         ->where("port", $port)
+                        //         ->update(["salud"=>1, "salud_fecha" => date("Y-m-d H:i:s")]);
+                        // }catch(Exception $err){}
                     }
+                    $aud->saveAuditoria([
+                        "idusuario" => $payload->payload["idusuario"],
+                        "json" => [
+                            "host"=>$host,
+                            "port"=>$port,
+                            "user"=>$user,
+                            "result"=>$data
+                        ],
+                        "mensaje" => $mensaje
+                    ]);
                 }catch(Exception $err){
                     $status = false;
                     $mensaje = $err;
