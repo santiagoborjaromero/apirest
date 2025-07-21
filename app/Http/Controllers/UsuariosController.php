@@ -239,15 +239,23 @@ class UsuariosController extends Controller
                         "email" => $email,
                     ];
                     $data = Usuario::where("idusuario", $id)->update($record_u);
+                    
+                    $data_del = ServidorUsuarios::where("idusuario", $id)->delete();
 
                     $record_srv = [];
+                    // $conteo = 0;
                     foreach ($servidores as $key => $value) {
+                        // $conteo++;
                         $record_srv[] = [
                             "idservidor" => $value["idservidor"],
                             "idusuario" => $id,
                         ];
+                        // if($conteo == 50){
+                        //     $data_srv = DB::table("servidor_usuarios")->insert($record_srv);
+                        //     $record_srv = [];
+                        //     $conteo = 0;
+                        // }
                     }
-                    $data_del = ServidorUsuarios::where("idusuario", $id)->delete();
                     $data_srv = DB::table("servidor_usuarios")->insert($record_srv);
 
                     $status = true;
@@ -260,7 +268,10 @@ class UsuariosController extends Controller
             $aud = new AuditoriaUsoController();
             $aud->saveAuditoria([
                 "idusuario" => $payload->payload["idusuario"],
-                "json" => $record,
+                "json" => [
+                    "usuario" => $record_u,
+                    "servidores" => $record_srv
+                ],
                 "mensaje" =>$mensaje
             ]);
         }else{
