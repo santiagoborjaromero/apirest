@@ -103,6 +103,7 @@ class TemplateComandosController extends Controller
                 $record_g = [
                     "idcliente" => $payload->payload["idcliente"],
                     "linea_comando" => $record["linea_comando"],
+                    "alias" => $record["alias"],
                 ];
                 try{
                     $data = TemplateComandos::create($record_g);

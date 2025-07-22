@@ -6,9 +6,6 @@ use App\Models\Servidores;
 use App\Models\Usuario;
 use Carbon\Exceptions\Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use phpseclib3\Crypt\RSA\Formats\Keys\OpenSSH;
-use phpseclib3\Net\SSH2;
 
 class ServidoresController extends Controller
 {
@@ -103,6 +100,7 @@ class ServidoresController extends Controller
             $record_g["ssh_puerto"] =  $record["ssh_puerto"];
             $record_g["agente_puerto"] =  $record["agente_puerto"];
             $record_g["comentarios"] =  $record["comentarios"];
+            $record_g["idscript_monitoreo"] =  $record["idscript_monitoreo"];
 
             try{
                 $data = Servidores::create($record_g);
@@ -111,6 +109,24 @@ class ServidoresController extends Controller
                 $status = false;
                 $mensaje = $err;
             }
+
+            // if (count($record["servidor_monitoreo"])){
+            //     foreach ($record["servidor_monitoreo"] as $key => $value) {
+            //         $record_serv_mon = [
+            //             "idservidor" => $data["idservidor"],
+            //             "idscript" => $value["idscript"],
+            //         ];
+            //     }
+            //     try{
+            //         $data_serv = ServidorMonitoreo::create($record_serv_mon);
+            //         $status = true;
+            //     } catch( Exception $err){
+            //         $status = false;
+            //         $mensaje = $err;
+            //     }
+                
+            // }
+
 
             $aud->saveAuditoria([
                 "idusuario" => $payload->payload["idusuario"],
@@ -145,6 +161,7 @@ class ServidoresController extends Controller
                 $record_g["ssh_puerto"] =  $record["ssh_puerto"];
                 $record_g["agente_puerto"] =  $record["agente_puerto"];
                 $record_g["comentarios"] =  $record["comentarios"];
+                $record_g["idscript_monitoreo"] =  $record["idscript_monitoreo"];
 
                 try{
                     $data = Servidores::where("idservidor", $id)->update($record_g);
