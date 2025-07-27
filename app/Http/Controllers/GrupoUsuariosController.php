@@ -24,7 +24,7 @@ class GrupoUsuariosController extends Controller
             if ($payload->payload["idcliente"] === null){
                 $data = null;
             }else {
-                $data = GrupoUsuarios::where("idcliente", $payload->payload["idcliente"])->get();
+                $data = GrupoUsuarios::with("scripts","scripts.cmds")->where("idcliente", $payload->payload["idcliente"])->get();
             }
         }else{
             $status = false;
@@ -43,13 +43,13 @@ class GrupoUsuariosController extends Controller
             $status = true;
             switch($accion){
                 case 'activos':
-                    $data = GrupoUsuarios::with("cliente", "usuarios", "rolmenugrupos.rolmenu.menu")->where("idcliente", $payload->payload["idcliente"])->get();
+                    $data = GrupoUsuarios::with("cliente", "usuarios", "scripts", "rolmenugrupos.rolmenu.menu")->where("idcliente", $payload->payload["idcliente"])->get();
                     break;
                 case 'inactivos':
-                    $data = GrupoUsuarios::onlyTrashed()->with("cliente", "usuarios", "rolmenugrupos.rolmenu.menu")->where("idcliente", $payload->payload["idcliente"])->get();
+                    $data = GrupoUsuarios::onlyTrashed()->with("cliente", "scripts", "usuarios", "rolmenugrupos.rolmenu.menu")->where("idcliente", $payload->payload["idcliente"])->get();
                     break;
                 case 'todos':
-                    $data = GrupoUsuarios::withTrashed()->with("cliente", "usuarios", "rolmenugrupos.rolmenu.menu")->where("idcliente", $payload->payload["idcliente"])->get();
+                    $data = GrupoUsuarios::withTrashed()->with("cliente", "scripts", "usuarios", "rolmenugrupos.rolmenu.menu")->where("idcliente", $payload->payload["idcliente"])->get();
                     break;
             }
         }else{
@@ -83,7 +83,7 @@ class GrupoUsuariosController extends Controller
         $payload = (Object) Controller::tokenSecurity($request);
         if ($payload->validate){
             $status = true;
-            $data = GrupoUsuarios::with("cliente", "usuarios", "rolmenugrupos.rolmenu.menu")->where("idgrupo_usuario", $id)->get();
+            $data = GrupoUsuarios::with("cliente", "usuarios", "scripts", "rolmenugrupos.rolmenu.menu")->where("idgrupo_usuario", $id)->get();
         }else{
             $status = false;
             $mensaje = $payload->mensaje;
@@ -107,7 +107,8 @@ class GrupoUsuariosController extends Controller
             $record_g = [];
             $record_g["idcliente"] =  $payload->payload["idcliente"];
             $record_g["nombre"] =  $request->input("nombre");
-            $record_g["idgrupo"] =  $request->input("idgrupo");
+            // $record_g["idgrupo"] =  $request->input("idgrupo");
+            $record_g["idscript_creacion"] =  $request->input("idscript_creacion");
 
             $rolmenugrupos =  $request->input("rolmenugrupos");
             try{
@@ -167,7 +168,8 @@ class GrupoUsuariosController extends Controller
                 $record_g = [];
                 $record_g["idcliente"] =  $payload->payload["idcliente"];
                 $record_g["nombre"] =  $request->input("nombre");
-                $record_g["idgrupo"] =  $request->input("idgrupo");
+                // $record_g["idgrupo"] =  $request->input("idgrupo");
+                $record_g["idscript_creacion"] =  $request->input("idscript_creacion");
     
                 $rolmenugrupos =  $request->input("rolmenugrupos");
                 try{

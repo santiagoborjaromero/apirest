@@ -25,6 +25,11 @@ class GrupoUsuarios extends Model
         return $this->belongsTo(Cliente::class, "idcliente", "idcliente");
     }
 
+    public function scripts(): BelongsTo
+    {
+        return $this->belongsTo(Scripts::class, "idscript_creacion", "idscript");
+    }
+
     public function usuarios(): HasMany
     {
         return $this->hasMany(Usuario::class, "idgrupo_usuario", "idgrupo_usuario");
