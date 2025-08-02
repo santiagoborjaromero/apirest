@@ -20,15 +20,17 @@ abstract class Controller
     public static function reponseFormat($status, $data, $msg){
         $resp = [
             "status" => $status,
-            "data" => $data,
-            // "data" => Controller::encode(json_encode($data)),
-            "message" => $msg,
+            // "data" => $data,
+            // "message" => $msg,
+            "data" => Controller::encode(json_encode($data)),
+            "message" => Controller::encode($msg),
         ];
-        return json_encode($resp, JSON_PRETTY_PRINT);
+        $response =  json_encode($resp, JSON_PRETTY_PRINT);
+        // error_log($response);
+        return $response;
     }
 
     static public function encode($data){
-        // return base64_encode(openssl_encrypt($texto, Controller::$cifrado, Controller::$key, 0, Controller::$iv));
 
         $ciphertext = openssl_encrypt(
             $data, 
@@ -38,23 +40,18 @@ abstract class Controller
             Controller::$iv
         );
 
-        $encrypted = base64_encode(Controller::$iv . $ciphertext);
+        $encrypted = base64_encode($ciphertext);
         return $encrypted;
     }
 
     static public function decode($encrypted){
-        // $decrypted = openssl_decrypt(base64_decode($texto), Controller::$cifrado ,Controller::$passphrase, Controller::$options, Controller::$iv);
-        $data = base64_decode($encrypted);
-        $ivLength = openssl_cipher_iv_length(Controller::$cifrado);
-        $iv = substr($data, 0, $ivLength);
-        $ciphertext = substr($data, $ivLength);
-        
+        $ciphertext = base64_decode($encrypted);
         $decrypted = openssl_decrypt(
             $ciphertext,
             Controller::$cifrado,
             Controller::$passphrase,
             Controller::$options,
-            $iv
+            Controller::$iv
         );
         return $decrypted;
     }

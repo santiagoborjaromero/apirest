@@ -281,6 +281,61 @@ class UsuariosController extends Controller
         return Controller::reponseFormat($status, $data, $mensaje) ;
     }
 
+    public function updatePassword(Request $request, $id)
+    {
+        $payload = (Object)Controller::tokenSecurity($request);
+        $status = false;
+        $data = [];
+        $mensaje="";
+
+        if ($payload->validate){
+            if ($id == ""){
+                $status = false;
+                $mensaje = "El ID está vacío";
+            }else{
+                $status = true;
+                $rs = Usuario::where("idusuario", "=", $id)->get();
+                try{
+                    if (count($rs) > 0){
+                        $newclave = Controller::generacionClave();
+                        $msg =  "LISAH le da la bienvenida ". $rs[0]["nombre"] . ", su usuario es " . $rs[0]["usuario"] . " y nueva contraseña es = " . $newclave;
+                        $clave = Controller::encode($newclave);
+                        $clave_expiracion = date("Y-m-d H:i:s", strtotime('+1 year'));
+                        Controller::enviarMensaje($id, $msg);
+                        
+                        $record_u = [
+                            "clave" => $clave,
+                            "clave_expiracion" => $clave_expiracion,
+                        ];
+                        $save = Usuario::where("idusuario","=", $id)->update($record_u);
+                        $mensaje = $newclave;
+                        $data = [];
+                        $status = true;
+                    }else{
+                        $status = false;
+                        $mensaje = "No existe el usuario que dese actualizar la contraseña";
+                    }
+                } catch (Exception $err){
+                    $status = false;
+                    $mensaje = "No pudo crear " . $err->getMessage();
+                }
+            }
+            
+            // $aud = new AuditoriaUsoController();
+            // $aud->saveAuditoria([
+            //     "idusuario" => $payload->payload["idusuario"],
+            //     "json" => [
+            //         "usuario" => $record_u,
+            //     ],
+            //     "mensaje" =>$mensaje
+            // ]);
+        }else{
+            $status = false;
+            $mensaje = $payload->mensaje;
+        }
+        return Controller::reponseFormat($status, $data, $mensaje) ;
+    }
+
 
     public function delete(Request $request, $id)
     {

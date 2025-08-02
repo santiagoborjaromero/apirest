@@ -22,16 +22,18 @@ use Illuminate\Support\Facades\Route;
 // })->middleware('auth:sanctum');
 
 //Public
-Route::group(["prefix"=>"v1", "namespace" => "App\Http\Controller"], function (){
+Route::group([
+    "prefix"=>"v1", 
+    "namespace" => "App\Http\Controller",
+    "middleware" => "public"
+], function (){
     Route::get("healthy", function(){
         return ["status" => true, "data" => "Estado server activo"];
     });
     Route::post("login", [AuthController::class, 'authUser']);
     Route::get("email", [UsuariosController::class, 'envioMails']);
-
-
-    
 });
+
 
 //Private
 Route::group([
@@ -57,6 +59,7 @@ Route::group([
     Route::get("usuarios_filter/{accion}", [UsuariosController::class, 'getAllFiltro']);
     Route::post("usuario", [UsuariosController::class, 'save']);
     Route::put("usuario/{id}", [UsuariosController::class, 'update']);
+    Route::put("usuario_actualiza_clave/{id}", [UsuariosController::class, 'updatePassword']);
     Route::delete("usuario/{id}", [UsuariosController::class, 'delete']);
     Route::put("usuario_recuperar/{id}", [UsuariosController::class, 'recovery']);
     
@@ -74,6 +77,7 @@ Route::group([
     
     Route::get("servidores", [ServidoresController::class, 'getAll']);
     Route::get("servidores/{id}", [ServidoresController::class, 'getOne']);
+    Route::get("servidores_usuarios/{id}", [ServidoresController::class, 'getOneWithUsers']);
     Route::get("servidores_filter/{accion}", [ServidoresController::class, 'getAllFiltro']);
     Route::post("servidor", [ServidoresController::class, 'save']);
     Route::put("servidor/{id}", [ServidoresController::class, 'update']);

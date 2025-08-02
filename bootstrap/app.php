@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->appendToGroup("private", [EnsureTokenIsValid::class]);
+        $middleware->appendToGroup("public", [EnsureTokenIsValid::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
    

@@ -62,7 +62,7 @@ class ConfiguracionController extends Controller
                 "ldap_base_dn" => $request->input("ldap_base_dn"),
                 "segundo_factor_activo" => $request->input("segundo_factor_activo"),
                 "segundo_factor_metodo" => $request->input("segundo_factor_metodo"),
-                "idscript_creacion_grupo_usuarios" => $request->input("idscript_creacion_grupo_usuarios"),
+                // "idscript_creacion_grupo_usuarios" => $request->input("idscript_creacion_grupo_usuarios"),
                 "idscript_creacion_usuario" => $request->input("idscript_creacion_usuario"),
                 "tiempo_refresco" => $request->input("tiempo_refresco"),
                 "tiempo_caducidad_claves" => $request->input("tiempo_caducidad_claves"),

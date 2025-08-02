@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Comandos extends Model
 {
     use HasFactory;
-    use SoftDeletes;
+    // use SoftDeletes;
     public $timestamps = true;
     protected $table = "comandos";
     protected $primaryKey = "idcomando";

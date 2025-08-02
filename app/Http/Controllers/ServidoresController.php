@@ -26,7 +26,6 @@ class ServidoresController extends Controller
             $mensaje = $payload->mensaje;
         }
 
-
         return Controller::reponseFormat($status, $data, $mensaje) ;
     }
 
@@ -66,6 +65,40 @@ class ServidoresController extends Controller
             if (isset($id)){
                 $status = true;
                 $data = Servidores::where("idservidor", $id)->with("cliente")->get();
+            }else{
+                $data = [];
+                $mensaje = "ID del usuario esta vacío";
+            }
+        }else{
+            $status = false;
+            $mensaje = $payload->mensaje;
+        }
+        return Controller::reponseFormat($status, $data, $mensaje) ;
+    }
+
+    public function getOneWithUsers(Request $request, $id)
+    {
+        $status = false;
+        $data = [];
+        $mensaje = "";
+        $payload = (Object) Controller::tokenSecurity($request);
+        if ($payload->validate){
+            if (isset($id)){
+                $status = true;
+                $data = Servidores::with([
+                        'usuarios' => function ($query) {
+                            $query->addSelect('*'); 
+                        },
+                        'usuarios.grupo',
+                        'cliente',
+                        'comandos'
+                    ])
+                    ->where('idservidor', $id)
+                    ->get();
+
+                $data->each(function ($servidor) {
+                    $servidor->usuarios->each->makeVisible('clave');
+                });
             }else{
                 $data = [];
                 $mensaje = "ID del usuario esta vacío";

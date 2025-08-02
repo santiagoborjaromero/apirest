@@ -116,8 +116,8 @@ class AuthController extends Controller
                                 // error_log($rs->token);
                             } else {
                                 $val_token = $this->validateToken($rs->token);
-                                error_log("Validacion de token");
-                                error_log(json_encode($val_token));
+                                // error_log("Validacion de token");
+                                // error_log(json_encode($val_token));
                                 if (!$val_token["validate"]){
                                     switch ($val_token["mensaje"]){
                                         case "bad":
@@ -140,9 +140,9 @@ class AuthController extends Controller
                                 /**
                                  * TODO: Cuando todo esta bien se genera codigo de verificación
                                  */
-                                error_log("Generando Codigo");
+                                // error_log("Generando Codigo");
                                 $codigo = $this->generacionCodigoVerificacion($rs->idusuario);
-                                error_log("Enviando Codigo");
+                                // error_log("Enviando Codigo");
                                 Controller::enviarMensaje($rs->idusuario, "Codigo de verificacion para LISAH es: {$codigo}");
                                 $record["verificacion_codigo"] = $codigo;
                                 $record["verificacion_expira"] = date('Y-m-d H:i:s', (strtotime ("+5 Minute")));
@@ -151,8 +151,8 @@ class AuthController extends Controller
                         }
 
                         if ($status){
-                            error_log("Guardando");
-                            error_log(json_encode($record));
+                            // error_log("Guardando");
+                            // error_log(json_encode($record));
                             Usuario::where("idusuario", $rs->idusuario)->update(json_decode(json_encode($record),true));
                             $aud->saveAuditoria([
                                 "idusuario" => $rs->idusuario,
@@ -183,7 +183,7 @@ class AuthController extends Controller
             "idrol" => $obj->idrol,
             "expire_date" => date("Y-m-d H:i:s", strtotime('+1 day'))
         ];
-        error_log(json_encode($rec));
+        // error_log(json_encode($rec));
         return base64_encode(Controller::encode(json_encode($rec)));
     }
 
@@ -191,10 +191,10 @@ class AuthController extends Controller
         $conclusion = false;
         $msg = "";
         
-        error_log("TOKEN");
-        error_log($token);
+        // error_log("TOKEN");
+        // error_log($token);
         $payload = json_decode(Controller::decode(base64_decode($token)), true);
-        error_log(json_encode($payload));
+        // error_log(json_encode($payload));
         if ($payload){
             if ($payload["expire_date"] >= date("Y-m-d H:i:s")){
                 $conclusion = true;
