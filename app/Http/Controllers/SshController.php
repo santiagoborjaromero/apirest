@@ -29,11 +29,16 @@ class SshController extends Controller
     }
 
     protected function connect()
-    {
+    {   
+        error_log($this->host);
+        error_log($this->port);
+        error_log($this->username);
+        error_log($this->password);
         $this->ssh = new SSH2($this->host, $this->port);
         try{
             return $this->ssh->login($this->username, $this->password);
         }catch(Exception $err){
+            error_log($err);
             return $err;
         }
 

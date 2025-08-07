@@ -276,9 +276,6 @@ class ServidoresController extends Controller
 
 
     public function healthyServers(Request $request){
-
-        $aud = new AuditoriaUsoController();
-
         $status = false;
         $data = [];
         $mensaje = "";
@@ -288,12 +285,10 @@ class ServidoresController extends Controller
             $status = false;
             $mensaje = $payload->mensaje;
         }else{
-            $record =  $request->input("data");
-            if ($record["puerto"] !="" && $record["host"] != ""){
+            if ($request->input("puerto") !="" && $request->input("host") != ""){
 
-                $host = $record["host"];
-                $port = $record["puerto"];
-                // $port = "0000";
+                $host = $request->input("host");
+                $port = $request->input("puerto");
 
                 $data = Usuario::where("idusuario", $payload->payload["idusuario"])->get();
                 foreach ($data as $key => $value) {
@@ -327,6 +322,7 @@ class ServidoresController extends Controller
                         //         ->update(["salud"=>1, "salud_fecha" => date("Y-m-d H:i:s")]);
                         // }catch(Exception $err){}
                     }
+                    $aud = new AuditoriaUsoController();
                     $aud->saveAuditoria([
                         "idusuario" => $payload->payload["idusuario"],
                         "json" => [

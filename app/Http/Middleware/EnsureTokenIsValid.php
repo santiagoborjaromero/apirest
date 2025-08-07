@@ -20,6 +20,7 @@ class EnsureTokenIsValid
         if (in_array($request->method(), ['POST', 'PUT', 'PATCH'])){
             error_log('POST PUT PATCH');
             if ($request->has('data')){
+                error_log("SI tiene Data");
                 $encryptedData = $request->input('data');
                 error_log($encryptedData);
                 $data = Controller::decode($encryptedData);
