@@ -134,27 +134,27 @@ class UsuariosController extends Controller
 
         if ($payload->validate){
             try{
-                $record = $request->input("data") ;
+                // $record = $request->input("data") ;
 
-                $rs = Usuario::where("usuario", "=", $record["usuario"])
-                    ->where("idcliente", $record["idcliente"])
+                $rs = Usuario::where("usuario", "=", $request->input("usuario"))
+                    ->where("idcliente", $request->input("idcliente"))
                     ->get();
 
                 if (count($rs)==0){
                     $newclave = Controller::generacionClave();
-                    $msg =  "LISAH le da la bienvenida ". $record["nombre"] . ", su usuario es =" . $record["usuario"] . " y nueva contraseña es = " . $newclave;
+                    $msg =  "LISAH le da la bienvenida ". $request->input("nombre") . ", su usuario es =" . $request->input("usuario") . " y nueva contraseña es = " . $newclave;
                     $clave = Controller::encode($newclave);
                     $clave_expiracion = date("Y-m-d H:i:s", strtotime('+1 year'));
 
-                    $idrol = $record["idrol"];
-                    $idgrupo_usuario = $record["idgrupo_usuario"];
-                    $idcliente = $record["idcliente"];
-                    $estado = $record["estado"];
-                    $nombre = $record["nombre"];
-                    $usuario = $record["usuario"];
-                    $ntfy_identificador = $record["ntfy_identificador"];
-                    $email = $record["email"];
-                    $servidores = $record["servidores"];
+                    $idrol = $request->input("idrol");
+                    $idgrupo_usuario = $request->input("idgrupo_usuario");
+                    $idcliente = $request->input("idcliente");
+                    $estado = $request->input("estado");
+                    $nombre = $request->input("nombre");
+                    $usuario = $request->input("usuario");
+                    $ntfy_identificador = $request->input("ntfy_identificador");
+                    $email = $request->input("email");
+                    $servidores = $request->input("servidores");
 
                     $record_u = [
                         "idrol" => $idrol,
@@ -194,7 +194,7 @@ class UsuariosController extends Controller
             $aud = new AuditoriaUsoController();
             $aud->saveAuditoria([
                 "idusuario" => $payload->payload["idusuario"],
-                "json" => $record
+                "json" => $record_u
             ]);
         }else{
             $status = false;
@@ -216,17 +216,15 @@ class UsuariosController extends Controller
                 $mensaje = "El ID está vacío";
             }else{
                 try{
-                    // $record = json_decode(json_encode($request->input("data")), true) ;
-                    $record = $request->input("data");
-                    $idrol = $record["idrol"];
-                    $idgrupo_usuario = $record["idgrupo_usuario"];
-                    $idcliente = $record["idcliente"];
-                    $estado = $record["estado"];
-                    $nombre = $record["nombre"];
-                    $usuario = $record["usuario"];
-                    $ntfy_identificador = $record["ntfy_identificador"];
-                    $email = $record["email"];
-                    $servidores = $record["servidores"];
+                    $idrol = $request->input("idrol");
+                    $idgrupo_usuario = $request->input("idgrupo_usuario");
+                    $idcliente = $request->input("idcliente");
+                    $estado = $request->input("estado");
+                    $nombre = $request->input("nombre");
+                    $usuario = $request->input("usuario");
+                    $ntfy_identificador = $request->input("ntfy_identificador");
+                    $email = $request->input("email");
+                    $servidores = $request->input("servidores");
 
                     $record_u = [
                         "idrol" => $idrol,
@@ -243,18 +241,11 @@ class UsuariosController extends Controller
                     $data_del = ServidorUsuarios::where("idusuario", $id)->delete();
 
                     $record_srv = [];
-                    // $conteo = 0;
                     foreach ($servidores as $key => $value) {
-                        // $conteo++;
                         $record_srv[] = [
                             "idservidor" => $value["idservidor"],
                             "idusuario" => $id,
                         ];
-                        // if($conteo == 50){
-                        //     $data_srv = DB::table("servidor_usuarios")->insert($record_srv);
-                        //     $record_srv = [];
-                        //     $conteo = 0;
-                        // }
                     }
                     $data_srv = DB::table("servidor_usuarios")->insert($record_srv);
 

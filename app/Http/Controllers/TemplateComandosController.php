@@ -90,7 +90,12 @@ class TemplateComandosController extends Controller
             $status = false;
             $mensaje = $payload->mensaje;
         }else{
-            $record =  $request->input("data");
+            // $record =  $request->input("data");
+            $record = [
+                "linea_comando" =>  $request->input("linea_comando"),
+                "alias" =>  $request->input("alias")
+            ];
+
 
             $rs = TemplateComandos::where("idcliente", $payload->payload["idcliente"])
                 ->where("linea_comando", $record["linea_comando"])
@@ -138,7 +143,11 @@ class TemplateComandosController extends Controller
             $mensaje = $payload->mensaje;
         }else{
             if ($id !=""){
-                $record =  $request->input("data");
+                // $record =  $request->input("data");
+                $record = [
+                    "linea_comando" =>  $request->input("linea_comando"),
+                    "alias" =>  $request->input("alias")
+                ];
                 try{
                     $data = TemplateComandos::where("idtemplate_comando", $id)->update($record);
                     $status = true;

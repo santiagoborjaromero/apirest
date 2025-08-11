@@ -84,16 +84,18 @@ class ScriptsController extends Controller
         $mensaje="";
 
         if ($payload->validate){
+            
             $record = $request->input("data") ;
+
             try{
                 $record_scripts = [
                     "idcliente" => $payload->payload["idcliente"],
-                    "nombre" => $record["nombre"],
-                    "estado" => $record["estado"],
+                    "nombre" => $request->input("nombre"),
+                    "estado" => $request->input("estado"),
                 ];
                 $data = Scripts::create($record_scripts);
                 
-                $cmds = $record["cmds"] ;
+                $cmds = $request->input("cmds") ;
                 $record_cmds = [];
                 foreach ($cmds as $key => $value) {
                     $record_cmds[] = [
