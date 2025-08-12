@@ -90,7 +90,7 @@ class ServidoresController extends Controller
                             $query->addSelect('*'); 
                         },
                         'usuarios.grupo',
-                        'cliente',
+                        'cliente.configuracion.script.cmds',
                         'comandos'
                     ])
                     ->where('idservidor', $id)
