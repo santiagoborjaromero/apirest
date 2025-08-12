@@ -10,8 +10,8 @@ php artisan migrate
 php artisan migrate:fresh 
 php artisan make:model HistoricoCodigoVerificacion
 ```
-LDAP
-```bash
-composer require directorytree/ldaprecord-laravel --ignore-platform-reqs
-```
 
+Ejecucion
+```bash
+php artisan serve --host=0.0.0.0
+```
