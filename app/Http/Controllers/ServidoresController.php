@@ -7,6 +7,8 @@ use App\Models\Usuario;
 use Carbon\Exceptions\Exception;
 use Illuminate\Http\Request;
 
+use function Laravel\Prompts\error;
+
 class ServidoresController extends Controller
 {
     public function getAll(Request $request)
@@ -338,6 +340,99 @@ class ServidoresController extends Controller
                     $mensaje = $err;
                 }
 
+            } else {
+                $status = false;
+                $mensaje = "El host o el puerto estan vacíos";
+            }
+        }
+        return Controller::reponseFormat($status, $data, $mensaje) ;
+    }
+
+    public function cmds(Request $request){
+        $status = false;
+        $data = [];
+        $mensaje = "";
+
+        $payload = (Object) Controller::tokenSecurity($request);
+        if (!$payload->validate){
+            $status = false;
+            $mensaje = $payload->mensaje;
+        }else{
+            if ($request->input("puerto") !="" && $request->input("host") != ""){
+
+                $host = $request->input("host");
+                $port = $request->input("puerto");
+                $data_original = $request->input("data");
+
+                $rsusr = Usuario::where("idusuario", $payload->payload["idusuario"])->get();
+                foreach ($rsusr as $key => $value) {
+                    $rs = $value;
+                }
+
+                $user = $rs["usuario"];
+                $password = Controller::decode($rs["clave"]);
+
+
+                $data_respuesta = [];
+
+                foreach ($data_original as $key => $value) {
+                    $comando = $value["cmd"];
+
+                    $respuesta ="";
+                    $tiempo_inicio = microtime(true);
+                    try{
+                        $ssh = new SshController($host, $port, $user, $password);
+                        $resp = $ssh->run($comando);
+                        $status = true;
+                        $tiempo_fin = microtime(true);
+                        $tiempo_transcurrido = round( $tiempo_fin - $tiempo_inicio ,2);
+                        
+                        // error_log($resp);
+
+                        // if (!$resp) {
+                        //     $status = false;
+                        //     $tiempo_fin = microtime(true);
+                        //     $tiempo_transcurrido = round( $tiempo_fin - $tiempo_inicio ,2);
+                        //     $respuesta = "Servidor {$host}:{$port} con usuario: {$user}, no respondio al login SSH. {$tiempo_transcurrido} seg";
+                        // }else{
+                        //     $tiempo_fin = microtime(true);
+                        //     $tiempo_transcurrido = round( $tiempo_fin - $tiempo_inicio ,2);
+                        //     // $respuesta = str_replace("\n","",$resp);
+                        //     // $respuesta = str_replace("\n","",$resp);
+                        //     $respuesta = $resp;
+                        //     $status = true;
+                        // }
+                        // $aud = new AuditoriaUsoController();
+                        // $aud->saveAuditoria([
+                        //     "idusuario" => $payload->payload["idusuario"],
+                        //     "json" => [
+                        //         "host"=>$host,
+                        //         "port"=>$port,
+                        //         "user"=>$user,
+                        //         "result"=>$data
+                        //     ],
+                        //     "mensaje" => $mensaje
+                        // ]);
+                    }catch(Exception $err){
+                        $status = false;
+                        $mensaje = $err;
+                    }
+
+                    $data_respuesta[] = [
+                        "id" => $value["id"],
+                        "cmd" => base64_encode($value["cmd"]),
+                        "respuesta" => base64_encode($resp),
+                        "transcurrido" => $tiempo_transcurrido
+                    ];
+                }
+
+                $data = [
+                    "action" => $request->input("action"),
+                    "host" => $request->input("host"),
+                    "puerto" => $request->input("puerto"),
+                    "identificador" => $request->input("identificador"),
+                    "data" =>  $data_respuesta
+                ];
             } else {
                 $status = false;
                 $mensaje = "El host o el puerto estan vacíos";

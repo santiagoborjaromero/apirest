@@ -84,6 +84,7 @@ Route::group([
     Route::delete("servidor/{id}", [ServidoresController::class, 'delete']);
     Route::put("servidor_recuperar/{id}", [ServidoresController::class, 'recovery']);
     Route::post("healthy_server", [ServidoresController::class, 'healthyServers']);
+    Route::post("cmds", [ServidoresController::class, 'cmds']);
     
     Route::get("variables", [VariablesController::class, 'getAll']);
     
