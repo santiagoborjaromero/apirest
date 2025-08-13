@@ -372,13 +372,10 @@ class ServidoresController extends Controller
                 $user = $rs["usuario"];
                 $password = Controller::decode($rs["clave"]);
 
-
                 $data_respuesta = [];
 
                 foreach ($data_original as $key => $value) {
                     $comando = $value["cmd"];
-
-                    $respuesta ="";
                     $tiempo_inicio = microtime(true);
                     try{
                         $ssh = new SshController($host, $port, $user, $password);
@@ -413,26 +410,25 @@ class ServidoresController extends Controller
                         //     ],
                         //     "mensaje" => $mensaje
                         // ]);
+
+                        $data_respuesta[] = [
+                            "id" => $value["id"],
+                            "cmd" => base64_encode($value["cmd"]),
+                            "respuesta" => base64_encode($resp),
+                            "transcurrido" => $tiempo_transcurrido
+                        ];
+                        $data = [
+                            "action" => $request->input("action"),
+                            "host" => $request->input("host"),
+                            "puerto" => $request->input("puerto"),
+                            "identificador" => $request->input("identificador"),
+                            "data" =>  $data_respuesta
+                        ];
                     }catch(Exception $err){
                         $status = false;
                         $mensaje = $err;
                     }
-
-                    $data_respuesta[] = [
-                        "id" => $value["id"],
-                        "cmd" => base64_encode($value["cmd"]),
-                        "respuesta" => base64_encode($resp),
-                        "transcurrido" => $tiempo_transcurrido
-                    ];
                 }
-
-                $data = [
-                    "action" => $request->input("action"),
-                    "host" => $request->input("host"),
-                    "puerto" => $request->input("puerto"),
-                    "identificador" => $request->input("identificador"),
-                    "data" =>  $data_respuesta
-                ];
             } else {
                 $status = false;
                 $mensaje = "El host o el puerto estan vacíos";
