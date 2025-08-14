@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientesController;
+use App\Http\Controllers\ComandosController;
 use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\GrupoUsuariosController;
@@ -86,6 +87,8 @@ Route::group([
     Route::put("servidor_recuperar/{id}", [ServidoresController::class, 'recovery']);
     Route::post("healthy_server", [ServidoresController::class, 'healthyServers']);
     Route::post("cmds", [ServidoresController::class, 'cmds']);
+
+    Route::get("comandos", [ComandosController::class, 'getAll']);
     
     Route::get("variables", [VariablesController::class, 'getAll']);
     

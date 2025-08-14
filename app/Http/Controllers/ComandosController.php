@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Comandos;
 use App\Models\Servidores;
+use App\Models\TemplateComandos;
 use App\Models\Usuario;
 use Carbon\Exceptions\Exception;
 use Illuminate\Http\Request;
@@ -19,7 +20,7 @@ class ComandosController extends Controller
 
         if ($payload->validate){
             $status = true;
-            $data = Comandos::where("idcliente", $payload->payload["idcliente"])->get();
+            $data = Comandos::get();
         }else{
             $status = false;
             $mensaje = $payload->mensaje;

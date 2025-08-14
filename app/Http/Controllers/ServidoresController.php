@@ -399,6 +399,9 @@ class ServidoresController extends Controller
                     try{
                         $ssh = new SshController($host, $port, $user, $password);
                         $resp = $ssh->run($comando);
+
+                        error_log($resp);
+
                         $status = true;
                         $tiempo_fin = microtime(true);
                         $tiempo_transcurrido = round( $tiempo_fin - $tiempo_inicio ,2);
