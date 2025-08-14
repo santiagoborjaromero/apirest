@@ -75,6 +75,7 @@ Route::group([
     Route::get("rolmenu_client", [RolMenuController::class, 'getMenuByClient']);
 
     
+    Route::get("servidores_familia", [ServidoresController::class, 'getFamilia']);
     Route::get("servidores", [ServidoresController::class, 'getAll']);
     Route::get("servidores/{id}", [ServidoresController::class, 'getOne']);
     Route::get("servidores_usuarios/{id}", [ServidoresController::class, 'getOneWithUsers']);

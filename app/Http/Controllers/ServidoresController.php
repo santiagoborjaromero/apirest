@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Servidores;
+use App\Models\ServidoresFamilia;
 use App\Models\Usuario;
 use Carbon\Exceptions\Exception;
 use Illuminate\Http\Request;
@@ -78,6 +79,22 @@ class ServidoresController extends Controller
         return Controller::reponseFormat($status, $data, $mensaje) ;
     }
 
+    public function getFamilia(Request $request)
+    {
+        $status = false;
+        $data = [];
+        $mensaje = "";
+        $payload = (Object) Controller::tokenSecurity($request);
+        if ($payload->validate){
+            $status = true;
+            $data = ServidoresFamilia::get();
+        }else{
+            $status = false;
+            $mensaje = $payload->mensaje;
+        }
+        return Controller::reponseFormat($status, $data, $mensaje) ;
+    }
+
     public function getOneWithUsers(Request $request, $id)
     {
         $status = false;
@@ -135,6 +152,7 @@ class ServidoresController extends Controller
             $record_g["ssh_puerto"] =  $record["ssh_puerto"];
             $record_g["agente_puerto"] =  $record["agente_puerto"];
             $record_g["comentarios"] =  $record["comentarios"];
+            $record_g["idservidores_familia"] =  $record["idservidores_familia"];
             // $record_g["idscript_monitoreo"] =  $record["idscript_monitoreo"];
 
             try{
@@ -196,6 +214,7 @@ class ServidoresController extends Controller
                 $record_g["ssh_puerto"] =  $record["ssh_puerto"];
                 $record_g["agente_puerto"] =  $record["agente_puerto"];
                 $record_g["comentarios"] =  $record["comentarios"];
+                $record_g["idservidores_familia"] =  $record["idservidores_familia"];
                 // $record_g["idscript_monitoreo"] =  $record["idscript_monitoreo"];
 
                 try{
