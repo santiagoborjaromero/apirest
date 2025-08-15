@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\AuditoriaUso;
 use App\Http\Requests\StoreAuditoriaUsoRequest;
 use App\Http\Requests\UpdateAuditoriaUsoRequest;
+use App\Models\HistoricoCmd;
+use Illuminate\Http\Request;
 
 class AuditoriaUsoController extends Controller
 {
@@ -36,6 +38,22 @@ class AuditoriaUsoController extends Controller
         else
             $ipaddress = 'UNKNOWN';
         return $ipaddress;
+    }
+
+    public function getHCmd(Request $request) {
+        $payload = (Object)Controller::tokenSecurity($request);
+        $status = false;
+        $data = [];
+        $mensaje="";
+
+        if ($payload->validate){
+            $status = true;
+            $data = HistoricoCmd::where("idcliente", $payload->payload["idcliente"])->get()->toJson();
+        }else{
+            $status = false;
+            $mensaje = $payload->mensaje;
+        }
+        return Controller::reponseFormat($status, $data, $mensaje) ;
     }
 
 }

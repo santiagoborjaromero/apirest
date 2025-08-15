@@ -56,6 +56,18 @@ abstract class Controller
         return $decrypted;
     }
 
+    static public function getToken(Request $request){
+        $token = "";
+        $auth = $request->header('Authorization');
+        $auth_arr = explode(" ",$auth);
+        if ($auth_arr[0] == "Bearer"){
+            if ($auth_arr[1] != ""){
+                $token = $auth_arr[1];
+            }
+        }
+        return $token;
+    }
+
     static public function tokenSecurity(Request $request){
         $token = "";
         $conclusion = false;

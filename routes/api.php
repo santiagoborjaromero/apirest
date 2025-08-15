@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuditoriaUsoController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientesController;
 use App\Http\Controllers\ComandosController;
@@ -107,6 +108,9 @@ Route::group([
     Route::put("script/{id}", [ScriptsController::class, 'update']);
     Route::delete("script/{id}", [ScriptsController::class, 'delete']);
     // Route::put("script_recuperar/{id}", [ScriptsController::class, 'recovery']);
-
     
+    /**
+     * Auditorias e Historicos
+     */
+    Route::get("histocmd", [AuditoriaUsoController::class, 'getHCmd']);
 });

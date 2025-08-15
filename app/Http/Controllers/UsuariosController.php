@@ -291,7 +291,7 @@ class UsuariosController extends Controller
                         $newclave = Controller::generacionClave();
                         $msg =  "LISAH le da la bienvenida ". $rs[0]["nombre"] . ", su usuario es " . $rs[0]["usuario"] . " y nueva contraseña es = " . $newclave;
                         $clave = Controller::encode($newclave);
-                        $clave_expiracion = date("Y-m-d H:i:s", strtotime('+1 year'));
+                        $clave_expiracion = date(" H:i:s", strtotime('+1 year'));
                         Controller::enviarMensaje($id, $msg);
                         
                         $record_u = [

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DocumentalHistorico;
+use App\Models\HistoricoCmd;
 use App\Models\Servidores;
 use App\Models\ServidoresFamilia;
 use App\Models\Usuario;
@@ -405,34 +407,9 @@ class ServidoresController extends Controller
                         $status = true;
                         $tiempo_fin = microtime(true);
                         $tiempo_transcurrido = round( $tiempo_fin - $tiempo_inicio ,2);
+
+                        $identificador = $request->input("identificador");
                         
-                        // error_log($resp);
-
-                        // if (!$resp) {
-                        //     $status = false;
-                        //     $tiempo_fin = microtime(true);
-                        //     $tiempo_transcurrido = round( $tiempo_fin - $tiempo_inicio ,2);
-                        //     $respuesta = "Servidor {$host}:{$port} con usuario: {$user}, no respondio al login SSH. {$tiempo_transcurrido} seg";
-                        // }else{
-                        //     $tiempo_fin = microtime(true);
-                        //     $tiempo_transcurrido = round( $tiempo_fin - $tiempo_inicio ,2);
-                        //     // $respuesta = str_replace("\n","",$resp);
-                        //     // $respuesta = str_replace("\n","",$resp);
-                        //     $respuesta = $resp;
-                        //     $status = true;
-                        // }
-                        // $aud = new AuditoriaUsoController();
-                        // $aud->saveAuditoria([
-                        //     "idusuario" => $payload->payload["idusuario"],
-                        //     "json" => [
-                        //         "host"=>$host,
-                        //         "port"=>$port,
-                        //         "user"=>$user,
-                        //         "result"=>$data
-                        //     ],
-                        //     "mensaje" => $mensaje
-                        // ]);
-
                         $data_respuesta[] = [
                             "id" => $value["id"],
                             "cmd" => base64_encode($value["cmd"]),
@@ -446,6 +423,29 @@ class ServidoresController extends Controller
                             "identificador" => $request->input("identificador"),
                             "data" =>  $data_respuesta
                         ];
+
+                        // // $micro = new Microservicio();
+                        // // $micro->sendHistorico($data, Controller::getToken($request));
+                        // $historico = [
+                        //     "idcliente" => $payload->payload["idcliente"],
+                        //     "idusuario" => $payload->payload["idusuario"],
+                        //     "idservidor" => $identificador["idservidor"],
+                        //     "idoperacion" => $identificador["id"],
+                        //     "idcola_comando" => "terminal",
+                        //     "fecha" => date("Y-m-d H:i:s"),
+                        //     "comando" => base64_encode($value["cmd"]),
+                        //     "respuesta" => base64_encode($resp),
+                        // ];
+                        // error_log(json_encode($historico));
+                        // try{
+                        //     // // $result = DocumentalHistorico::create($historico);
+                        //     // // HistoricoCmd::create($data);
+                        //     // // HistoricoCmd::create($data);
+                        //     $r = HistoricoCmd::create($data);
+                        // }catch(Exception $err){
+                        //     error_log(json_encode($err));
+                        // }
+
                     }catch(Exception $err){
                         $status = false;
                         $mensaje = $err;
