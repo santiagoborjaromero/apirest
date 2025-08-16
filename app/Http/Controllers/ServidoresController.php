@@ -405,46 +405,20 @@ class ServidoresController extends Controller
                         error_log($resp);
 
                         $status = true;
-                        $tiempo_fin = microtime(true);
-                        $tiempo_transcurrido = round( $tiempo_fin - $tiempo_inicio ,2);
-
-                        $identificador = $request->input("identificador");
+                        // $tiempo_fin = microtime(true);
+                        // $tiempo_transcurrido = round( $tiempo_fin - $tiempo_inicio ,2);
+                        // $identificador = $request->input("identificador");
                         
                         $data_respuesta[] = [
                             "id" => $value["id"],
                             "cmd" => base64_encode($value["cmd"]),
                             "respuesta" => base64_encode($resp),
-                            "transcurrido" => $tiempo_transcurrido
                         ];
                         $data = [
                             "action" => $request->input("action"),
-                            "host" => $request->input("host"),
-                            "puerto" => $request->input("puerto"),
                             "identificador" => $request->input("identificador"),
                             "data" =>  $data_respuesta
                         ];
-
-                        // // $micro = new Microservicio();
-                        // // $micro->sendHistorico($data, Controller::getToken($request));
-                        // $historico = [
-                        //     "idcliente" => $payload->payload["idcliente"],
-                        //     "idusuario" => $payload->payload["idusuario"],
-                        //     "idservidor" => $identificador["idservidor"],
-                        //     "idoperacion" => $identificador["id"],
-                        //     "idcola_comando" => "terminal",
-                        //     "fecha" => date("Y-m-d H:i:s"),
-                        //     "comando" => base64_encode($value["cmd"]),
-                        //     "respuesta" => base64_encode($resp),
-                        // ];
-                        // error_log(json_encode($historico));
-                        // try{
-                        //     // // $result = DocumentalHistorico::create($historico);
-                        //     // // HistoricoCmd::create($data);
-                        //     // // HistoricoCmd::create($data);
-                        //     $r = HistoricoCmd::create($data);
-                        // }catch(Exception $err){
-                        //     error_log(json_encode($err));
-                        // }
 
                     }catch(Exception $err){
                         $status = false;
