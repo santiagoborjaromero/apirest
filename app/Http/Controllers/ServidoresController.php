@@ -44,13 +44,13 @@ class ServidoresController extends Controller
             $status = true;
             switch($accion){
                 case 'activos':
-                    $data = Servidores::with("cliente")->where("idcliente", $payload->payload["idcliente"])->get();
+                    $data = Servidores::with("cliente","usuarios")->where("idcliente", $payload->payload["idcliente"])->get();
                     break;
                 case 'inactivos':
-                    $data = Servidores::onlyTrashed()->with("cliente")->where("idcliente", $payload->payload["idcliente"])->get();
+                    $data = Servidores::onlyTrashed()->with("cliente","usuarios")->where("idcliente", $payload->payload["idcliente"])->get();
                     break;
                 case 'todos':
-                    $data = Servidores::withTrashed()->with("cliente")->where("idcliente", $payload->payload["idcliente"])->get();
+                    $data = Servidores::withTrashed()->with("cliente","usuarios")->where("idcliente", $payload->payload["idcliente"])->get();
                     break;
             }
         }else{
@@ -153,6 +153,7 @@ class ServidoresController extends Controller
             $record_g["host"] =  $record["host"];
             $record_g["ssh_puerto"] =  $record["ssh_puerto"];
             $record_g["agente_puerto"] =  $record["agente_puerto"];
+            $record_g["terminal_puerto"] =  $record["terminal_puerto"];
             $record_g["comentarios"] =  $record["comentarios"];
             $record_g["idservidores_familia"] =  $record["idservidores_familia"];
             // $record_g["idscript_monitoreo"] =  $record["idscript_monitoreo"];
@@ -215,6 +216,7 @@ class ServidoresController extends Controller
                 $record_g["host"] =  $record["host"];
                 $record_g["ssh_puerto"] =  $record["ssh_puerto"];
                 $record_g["agente_puerto"] =  $record["agente_puerto"];
+                $record_g["terminal_puerto"] =  $record["terminal_puerto"];
                 $record_g["comentarios"] =  $record["comentarios"];
                 $record_g["idservidores_familia"] =  $record["idservidores_familia"];
                 // $record_g["idscript_monitoreo"] =  $record["idscript_monitoreo"];
