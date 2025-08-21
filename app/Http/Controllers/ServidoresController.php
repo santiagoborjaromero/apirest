@@ -44,13 +44,13 @@ class ServidoresController extends Controller
             $status = true;
             switch($accion){
                 case 'activos':
-                    $data = Servidores::with("cliente","usuarios")->where("idcliente", $payload->payload["idcliente"])->get();
+                    $data = Servidores::with("cliente","usuarios", "familia")->where("idcliente", $payload->payload["idcliente"])->get();
                     break;
                 case 'inactivos':
-                    $data = Servidores::onlyTrashed()->with("cliente","usuarios")->where("idcliente", $payload->payload["idcliente"])->get();
+                    $data = Servidores::onlyTrashed()->with("cliente","usuarios", "familia")->where("idcliente", $payload->payload["idcliente"])->get();
                     break;
                 case 'todos':
-                    $data = Servidores::withTrashed()->with("cliente","usuarios")->where("idcliente", $payload->payload["idcliente"])->get();
+                    $data = Servidores::withTrashed()->with("cliente","usuarios", "familia")->where("idcliente", $payload->payload["idcliente"])->get();
                     break;
             }
         }else{

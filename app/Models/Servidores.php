@@ -23,6 +23,11 @@ class Servidores extends Model
         return $this->belongsTo(Cliente::class, "idcliente", "idcliente");
     }
 
+    public function familia(): BelongsTo
+    {
+        return $this->belongsTo(ServidoresFamilia::class, "idservidores_familia", "idservidores_familia");
+    }
+
     public function usuarios(): BelongsToMany
     {
         return $this->belongsToMany(Usuario::class, 'servidor_usuarios', 'idservidor', 'idusuario');
