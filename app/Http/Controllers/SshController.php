@@ -41,10 +41,6 @@ class SshController extends Controller
             error_log($err);
             return $err;
         }
-
-        // if (!$this->ssh->login($this->username, $this->password)) {
-        //     throw new \Exception("Fallo al conectar por SSH al servidor: {$this->host}");
-        // }
     }
 
     /**
@@ -56,7 +52,8 @@ class SshController extends Controller
     public function run($commands): string
     {
         if (is_string($commands)) {
-            return $this->ssh->exec($commands);
+            $resp = $this->ssh->exec($commands); 
+            return $resp;
         }
 
         if (is_array($commands)) {

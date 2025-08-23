@@ -40,6 +40,55 @@ class AuditoriaUsoController extends Controller
         return $ipaddress;
     }
 
+    public function getAuditoria(Request $request, string $b64) {
+        $payload = (Object)Controller::tokenSecurity($request);
+        $status = false;
+        $data = [];
+        $mensaje="";
+
+        if ($payload->validate){
+
+            $input = explode("|",base64_decode($b64));
+            $idusuario = $input[0];
+            $metodo = $input[1];
+            $fechaini = $input[2];
+            $fechafin = $input[3];
+
+            error_log(base64_decode($b64));
+
+            $status = true;
+            if ($idusuario=="T" && $metodo == "T"){
+                $data = AuditoriaUso::with("usuario")
+                    ->where("idcliente", $payload->payload["idcliente"])
+                    ->whereBetween("created_at",[$fechaini." 00:00:00", $fechafin." 23:59:59"])
+                    ->get();
+            }else  if ($idusuario!="T" && $metodo == "T"){
+                $data = AuditoriaUso::with("usuario")
+                    ->where("idcliente", $payload->payload["idcliente"])
+                    ->where("idusuario", $idusuario)
+                    ->whereBetween("created_at",[$fechaini." 00:00:00", $fechafin." 23:59:59"])
+                    ->get();
+            }else  if ($idusuario=="T" && $metodo != "T"){
+                $data = AuditoriaUso::with("usuario")
+                    ->where("idcliente", $payload->payload["idcliente"])
+                    ->where("metodo", "=", $metodo)
+                    ->whereBetween("created_at",[$fechaini." 00:00:00", $fechafin." 23:59:59"])
+                    ->get();
+            }else  if ($idusuario!="T" && $metodo != "T"){
+                $data = AuditoriaUso::with("usuario")
+                    ->where("idcliente", $payload->payload["idcliente"])
+                    ->where("idusuario", $idusuario)
+                    ->where("metodo", "=", $metodo)
+                    ->whereBetween("created_at",[$fechaini." 00:00:00", $fechafin." 23:59:59"])
+                    ->get();
+            }
+        }else{
+            $status = false;
+            $mensaje = $payload->mensaje;
+        }
+        return Controller::reponseFormat($status, $data, $mensaje) ;
+    }
+
     public function getHCmd(Request $request) {
         $payload = (Object)Controller::tokenSecurity($request);
         $status = false;

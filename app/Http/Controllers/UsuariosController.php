@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreUsuariosRequest;
 use App\Http\Requests\UpdateUsuariosRequest;
 use App\Mail\EnvioMails;
+use App\Models\Configuracion;
 use App\Models\Servidores;
 use App\Models\ServidorUsuarios;
 use App\Models\Usuario;
@@ -141,10 +142,18 @@ class UsuariosController extends Controller
                     ->get();
 
                 if (count($rs)==0){
+
                     $newclave = Controller::generacionClave();
                     $msg =  "LISAH le da la bienvenida ". $request->input("nombre") . ", su usuario es =" . $request->input("usuario") . " y nueva contraseña es = " . $newclave;
+                    
+                    $cfg = Configuracion::select("tiempo_caducidad_claves")->where("idcliente", $request->input("idcliente"))->get();
+                    foreach ($cfg as $key => $value) {
+                        $rs = $value;
+                    }
+                    $tiempo_caducidad_claves = $rs["tiempo_caducidad_claves"];
+
                     $clave = Controller::encode($newclave);
-                    $clave_expiracion = date("Y-m-d H:i:s", strtotime('+1 year'));
+                    $clave_expiracion = date("Y-m-d H:i:s", strtotime("+" . $tiempo_caducidad_claves ." day"));
 
                     $idrol = $request->input("idrol");
                     $idgrupo_usuario = $request->input("idgrupo_usuario");
@@ -271,6 +280,91 @@ class UsuariosController extends Controller
         }
         return Controller::reponseFormat($status, $data, $mensaje) ;
     }
+    public function block(Request $request, $id, $accion)
+    {
+        $payload = (Object)Controller::tokenSecurity($request);
+        $status = false;
+        $data = [];
+        $mensaje="";
+        $serv_data = [];
+
+        if ($payload->validate){
+            if ($id == ""){
+                $status = false;
+                $mensaje = "El ID está vacío";
+            }else{
+                try{
+                    $dtu = Usuario::where("idusuario", $payload->payload["idusuario"])->get();
+                    foreach ($dtu as $key => $value) {
+                        $user_ejecutor_data = $value;
+                    }
+                    $user_ejecutor = $user_ejecutor_data["usuario"];
+                    $password_ejecutor = Controller::decode($user_ejecutor_data["clave"]);
+                    
+                    $dt = Usuario::where("idusuario", $id)->get();
+                    foreach ($dt as $key => $value) {
+                        $user_data = $value;
+                    }
+                    $user = $user_data["usuario"];
+                    // $password = Controller::decode($user_data["clave"]);
+
+                    if ($accion == "activar"){
+                        $record_u = [
+                            "estado" => 1,
+                            "clave_expiracion" => UsuariosController::setCaducidad( $payload->payload["idcliente"])
+                        ];
+                    }else{
+                        $record_u = [
+                            "estado" => 0,
+                            "clave_expiracion" => date("Y")."-01-01"
+                        ];
+                    }
+                    Usuario::where("idusuario", $id)->update($record_u);
+                    $mensaje = "Usuario se encuentra inactivo en el sistema y base de datos. ";
+
+                    $servidores = ServidorUsuarios::with("servidor")->where("idusuario", $id)->get();
+                    $serv_data = [];
+                    foreach ($servidores as $key => $value) {
+                        $host = $value["servidor"]["host"];
+                        $port = $value["servidor"]["ssh_puerto"];
+                        
+                        $ssh = new SshController($host, $port, $user_ejecutor, $password_ejecutor);
+                        $cmd = "";
+                        if ($accion=="activar"){
+                            $cmd = 'passwd -l ' . $user . ' -f';
+                        }else if ($accion=="inactivar"){
+                            $cmd = 'passwd -u ' . $user . ' -f';
+                        }
+                        $resp = $ssh->run($cmd);
+
+                        $mensaje .= "\nServidores:\n$user_ejecutor@$host:$port [$accion] $resp";
+                        $serv_data[] = $mensaje;
+                    }
+
+                    $status = true;
+                } catch (Exception $err){
+                    $status = false;
+                    $mensaje = "No pudo crear " . $err->getMessage();
+                }
+            }
+            
+            $aud = new AuditoriaUsoController();
+            $aud->saveAuditoria([
+                "idusuario" => $payload->payload["idusuario"],
+                "json" => [
+                    "usuario" => $record_u,
+                    "servidores" => $serv_data
+                ],
+                "mensaje" =>$mensaje
+            ]);
+        }else{
+            $status = false;
+            $mensaje = $payload->mensaje;
+        }
+        return Controller::reponseFormat($status, $data, $mensaje) ;
+    }
+
+    
 
     public function updatePassword(Request $request, $id)
     {
@@ -285,48 +379,76 @@ class UsuariosController extends Controller
                 $mensaje = "El ID está vacío";
             }else{
                 $status = true;
-                $rs = Usuario::where("idusuario", "=", $id)->get();
+                $data=[];
                 try{
-                    if (count($rs) > 0){
-                        $newclave = Controller::generacionClave();
-                        $msg =  "LISAH le da la bienvenida ". $rs[0]["nombre"] . ", su usuario es " . $rs[0]["usuario"] . " y nueva contraseña es = " . $newclave;
-                        $clave = Controller::encode($newclave);
-                        $clave_expiracion = date(" H:i:s", strtotime('+1 year'));
-                        Controller::enviarMensaje($id, $msg);
-                        
-                        $record_u = [
-                            "clave" => $clave,
-                            "clave_expiracion" => $clave_expiracion,
-                        ];
-                        $save = Usuario::where("idusuario","=", $id)->update($record_u);
-                        $mensaje = $newclave;
-                        $data = [];
-                        $status = true;
-                    }else{
-                        $status = false;
-                        $mensaje = "No existe el usuario que dese actualizar la contraseña";
-                    }
-                } catch (Exception $err){
+                    $resp = UsuariosController::setPassword($id, $payload->payload["idcliente"]);
+                    $status = $resp["status"];
+                    $mensaje = $resp["mensaje"];
+                }catch(Exception $err){
                     $status = false;
-                    $mensaje = "No pudo crear " . $err->getMessage();
+                    $mensaje = $err;
                 }
             }
-            
-            // $aud = new AuditoriaUsoController();
-            // $aud->saveAuditoria([
-            //     "idusuario" => $payload->payload["idusuario"],
-            //     "json" => [
-            //         "usuario" => $record_u,
-            //     ],
-            //     "mensaje" =>$mensaje
-            // ]);
         }else{
             $status = false;
             $mensaje = $payload->mensaje;
         }
+
+        $aud = new AuditoriaUsoController();
+        $aud->saveAuditoria([
+            "idusuario" => $payload->payload["idusuario"],
+            "json" => [
+                "usuario" => $id,
+                "status" => $status,
+                "razon" => "Cambio o reseteo de contraseña desde el LISAH Administrador"
+            ],
+            "mensaje" => $mensaje
+        ]);
         return Controller::reponseFormat($status, $data, $mensaje) ;
     }
 
+    static public function setPassword($id, $idcliente){
+        $rs = Usuario::where("idusuario", $id)->get();
+        if (count($rs)>0){
+            $newclave = Controller::generacionClave();
+            $msg =  "LISAH comunica su nueva contraseña ". $rs[0]["nombre"] . ",\n su usuario es " . $rs[0]["usuario"] . " y nueva contraseña es = " . $newclave;
+            Controller::enviarMensaje($id, $msg);
+            $clave = Controller::encode($newclave);
+
+            $clave_expiracion = UsuariosController::setCaducidad($idcliente);
+
+            $record_u = [
+                "clave" => $clave,
+                "clave_expiracion" => $clave_expiracion,
+            ];
+            Usuario::where("idusuario", $id)->update($record_u);
+            $mensaje = "Clave generada con éxito";
+            $status = true;
+        }else{
+            $status = false;
+        }
+        return ["status" => $status, "mensaje" => $mensaje];
+    }
+
+    static public function setCaducidad($idcliente){
+        $cfg = Configuracion::select("tiempo_caducidad_claves")->where("idcliente", $idcliente)->get();
+        foreach ($cfg as $key => $value) {
+            $rs = $value;
+        }
+        $tiempo_caducidad_claves = $rs["tiempo_caducidad_claves"];
+        $fecha_limite_validez_clave = $rs["fecha_limite_validez_clave"];
+
+        $clave_expiracion = date("Y-m-d H:i:s", strtotime("+" . $tiempo_caducidad_claves ." day"));
+
+        if ($fecha_limite_validez_clave){
+            $limite_caducidad = $fecha_limite_validez_clave . " 23:59:59";
+            if ($clave_expiracion > $limite_caducidad){
+                    $clave_expiracion = $limite_caducidad;
+            }
+        }
+
+        return $clave_expiracion;
+    }
 
     public function delete(Request $request, $id)
     {

@@ -67,7 +67,8 @@ class ConfiguracionController extends Controller
                 "tiempo_refresco" => $request->input("tiempo_refresco"),
                 "tiempo_caducidad_claves" => $request->input("tiempo_caducidad_claves"),
                 "tiempo_caducidad_token_usuarios" => $request->input("tiempo_caducidad_token_usuarios"),
-                "tiempo_caducidad_token_agente" => $request->input("tiempo_caducidad_token_agente"),
+                // "tiempo_caducidad_token_agente" => $request->input("tiempo_caducidad_token_agente"),
+                "fecha_limite_validez_clave" => $request->input("fecha_limite_validez_clave"),
             ];
 
             $idconfiguracion = $request->input("idconfiguracion");

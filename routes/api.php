@@ -33,6 +33,7 @@ Route::group([
         return ["status" => true, "data" => "Estado server activo"];
     });
     Route::post("login", [AuthController::class, 'authUser']);
+    Route::post("reset", [AuthController::class, 'resetPassword']);
     Route::get("email", [UsuariosController::class, 'envioMails']);
 });
 
@@ -64,6 +65,8 @@ Route::group([
     Route::put("usuario_actualiza_clave/{id}", [UsuariosController::class, 'updatePassword']);
     Route::delete("usuario/{id}", [UsuariosController::class, 'delete']);
     Route::put("usuario_recuperar/{id}", [UsuariosController::class, 'recovery']);
+    Route::put("usuario_inactivar/{id}/{accion}", [UsuariosController::class, 'block']);
+    
     
     Route::get("grupousuarios", [GrupoUsuariosController::class, 'getAll']);
     Route::get("grupousuarios/{id}", [GrupoUsuariosController::class, 'getOne']);
@@ -113,4 +116,6 @@ Route::group([
      * Auditorias e Historicos
      */
     Route::get("histocmd", [AuditoriaUsoController::class, 'getHCmd']);
+    Route::get("auditoria/{data}", [AuditoriaUsoController::class, 'getAuditoria']);
+    // Route::get("auditoria/{data}/{metodo}/{fechaini}/{fechafin}", [AuditoriaUsoController::class, 'getAuditoria']);
 });

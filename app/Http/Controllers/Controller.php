@@ -6,6 +6,7 @@ use App\Mail\EnvioMails;
 use App\Models\Cliente;
 use App\Models\Configuracion;
 use App\Models\Usuario;
+use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Mail;
@@ -74,7 +75,6 @@ abstract class Controller
         $msg = "";
         $data = [];
         
-        //TODO: Extrae la cabecera
         $auth = $request->header('Authorization');
         $auth_arr = explode(" ",$auth);
         if ($auth_arr[0] == "Bearer"){
@@ -108,6 +108,12 @@ abstract class Controller
         return ["validate" => $conclusion, "mensaje" => $msg, "payload" => $data];
     }
 
+    function validateDate($date, $format = 'Y-m-d H:i:s')
+    {
+        $d = DateTime::createFromFormat($format, $date);
+        return $d && $d->format($format) == $date;
+    }
+
     static public function enviarMensaje($idusuario, $texto){
 
         $data_u = Usuario::where("idusuario", $idusuario)->get();
@@ -115,7 +121,6 @@ abstract class Controller
             $rs_usuario = $value;
         }
         $idcliente = $rs_usuario->idcliente;
-        
         
         if ($idcliente === null){
             $segundo_factor_activo = true;
@@ -138,9 +143,7 @@ abstract class Controller
 
             }
         }
-        
     }
-
 
     static public function generacionClave(){
         $caracteres = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
