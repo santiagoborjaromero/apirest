@@ -306,7 +306,7 @@ class UsuariosController extends Controller
                         $user_data = $value;
                     }
                     $user = $user_data["usuario"];
-                    // $password = Controller::decode($user_data["clave"]);
+                    $password = Controller::decode($user_data["clave"]);
 
                     if ($accion == "activar"){
                         $record_u = [
@@ -322,24 +322,35 @@ class UsuariosController extends Controller
                     Usuario::where("idusuario", $id)->update($record_u);
                     $mensaje = "Usuario se encuentra inactivo en el sistema y base de datos. ";
 
-                    $servidores = ServidorUsuarios::with("servidor")->where("idusuario", $id)->get();
-                    $serv_data = [];
-                    foreach ($servidores as $key => $value) {
-                        $host = $value["servidor"]["host"];
-                        $port = $value["servidor"]["ssh_puerto"];
-                        
-                        $ssh = new SshController($host, $port, $user_ejecutor, $password_ejecutor);
-                        $cmd = "";
-                        if ($accion=="activar"){
-                            $cmd = 'passwd -l ' . $user . ' -f';
-                        }else if ($accion=="inactivar"){
-                            $cmd = 'passwd -u ' . $user . ' -f';
-                        }
-                        $resp = $ssh->run($cmd);
+                    $respserv = UsuariosController::updateServidores([
+                        "usuario" => $user,
+                        "clave" => $password,
+                    ],[
+                        "usuario" => $user_ejecutor,
+                        "clave" => $password_ejecutor,
+                    ], $accion);
 
-                        $mensaje .= "\nServidores:\n$user_ejecutor@$host:$port [$accion] $resp";
-                        $serv_data[] = $mensaje;
-                    }
+                    $mensaje = $respserv["mensaje"];
+                    $serv_data = $respserv["data"];
+
+                    // $servidores = ServidorUsuarios::with("servidor")->where("idusuario", $id)->get();
+                    // $serv_data = [];
+                    // foreach ($servidores as $key => $value) {
+                    //     $host = $value["servidor"]["host"];
+                    //     $port = $value["servidor"]["ssh_puerto"];
+                        
+                    //     $ssh = new SshController($host, $port, $user_ejecutor, $password_ejecutor);
+                    //     $cmd = "";
+                    //     if ($accion=="activar"){
+                    //         $cmd = 'passwd -l ' . $user . ' -f';
+                    //     }else if ($accion=="inactivar"){
+                    //         $cmd = 'passwd -u ' . $user . ' -f';
+                    //     }
+                    //     $resp = $ssh->run($cmd);
+
+                    //     $mensaje .= "\nServidores:\n$user_ejecutor@$host:$port [$accion] $resp";
+                    //     $serv_data[] = $mensaje;
+                    // }
 
                     $status = true;
                 } catch (Exception $err){
@@ -364,7 +375,47 @@ class UsuariosController extends Controller
         return Controller::reponseFormat($status, $data, $mensaje) ;
     }
 
-    
+    static public function updateServidores($data = [], $ejecutor=null, $accion = "clave"){
+        if (!$ejecutor){
+            $ejecutor = [
+                "usuario" => "soft8",
+                "clave" => "RtlEEHHHb4QXi6JyiiJXue4MFfQ7i99a",
+            ];
+        }
+
+        $$mensaje = "";
+        $status = false;
+        $data = [];
+
+        $servidores = ServidorUsuarios::with("servidor")->where("idusuario", $data["idusuario"])->get();
+        foreach ($servidores as $key => $value) {
+            $host = $value["servidor"]["host"];
+            $port = $value["servidor"]["ssh_puerto"];
+            
+            $ssh = new SshController($host, $port, $ejecutor["usuario"], $ejecutor["clave"]);
+            $cmd = "";
+            switch ($accion) {
+                case 'activar':
+                    $cmd = 'passwd -l ' . $data["usuario"] . ' -f';
+                    break;
+                case 'inactivar':
+                    $cmd = 'passwd -u ' . $data["usuario"] . ' -f';
+                    break;
+                case 'clave':
+                    $cmd = 'echo "'. $data["usuario"].':'.$data["clave"].'" | chpasswd';
+                    break;
+            }
+            $resp = $ssh->run($cmd);
+            $mensaje .= "\nServidores:\n".$ejecutor["usuario"]."@$host:$port [$accion] $resp";
+            $data[] = $mensaje;
+        }
+
+        return [
+            "status" => $status,
+            "mensaje" => $mensaje,
+            "data" => $data,
+        ];
+    }
 
     public function updatePassword(Request $request, $id)
     {
@@ -382,6 +433,8 @@ class UsuariosController extends Controller
                 $data=[];
                 try{
                     $resp = UsuariosController::setPassword($id, $payload->payload["idcliente"]);
+
+
                     $status = $resp["status"];
                     $mensaje = $resp["mensaje"];
                 }catch(Exception $err){
@@ -421,7 +474,20 @@ class UsuariosController extends Controller
                 "clave" => $clave,
                 "clave_expiracion" => $clave_expiracion,
             ];
+
             Usuario::where("idusuario", $id)->update($record_u);
+
+            $user = Usuario::where("idusuario", $id);
+
+            foreach ($user as $key => $value) {
+                $rs = $value;
+            }
+
+            UsuariosController::updateServidores([
+                "usuario" => $rs->usuario,
+                "clave"   => $clave
+            ],null,"clave");
+
             $mensaje = "Clave generada con éxito";
             $status = true;
         }else{

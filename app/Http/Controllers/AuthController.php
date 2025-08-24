@@ -174,7 +174,7 @@ class AuthController extends Controller
                                     Usuario::where("idusuario", $rs->idusuario)->update(json_decode(json_encode($record),true));
                                     $aud->saveAuditoria([
                                         "idusuario" => $rs->idusuario,
-                                        "mensaje" => "Logueado"
+                                        "mensaje" => "Sesión establecida con éxito"
                                     ]);
                                 }
                             }
@@ -215,10 +215,9 @@ class AuthController extends Controller
             
             Usuario::where("idusuario", $payload->payload["idusuario"])->update(json_decode(json_encode($record),true));
 
-            $mensaje = "Cerrada la sesion con exito";
+            $mensaje = "Sesión cerrada con éxtito";
             $status = true;
             $data = [];
-
 
             $aud = new AuditoriaUsoController();
             $aud->saveAuditoria([
