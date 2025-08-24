@@ -60,127 +60,133 @@ class AuthController extends Controller
                         "idusuario" => $rs->idusuario,
                         "json" => [
                             "usuario" => $usuario,
-                            // "clave" => $clave,
                         ],
                         "mensaje" => $mensaje
                     ]);
                     Controller::enviarMensaje($rs->idusuario, $mensaje);
                 } else {
 
-                    $cfg = Configuracion::where("idcliente", $rs->idcliente)->get();
-                    foreach ($cfg as $key => $value) {
-                        $cfgrs = $value;
-                    }
-                    $fecha_limite_validez_clave = $cfgrs["fecha_limite_validez_clave"];
-                    if ($fecha_limite_validez_clave && $fecha_limite_validez_clave < date("Y-m-d H:i:s")){
-                        $status = false;
-                        $mensaje = "CADUCIDAD GENERAL: No se encuentra autorizado para ingresar dado a la fecha límite de caducidad de contraseña que esta determinado en {$fecha_limite_validez_clave}. Consulte con Administración";
-                        $data = [];
-                        $aud->saveAuditoria([
-                            "idusuario" => $rs->idusuario,
-                            "mensaje" => $mensaje
-                        ]);
+                    if (!$rs->idcliente){
+                        $rs->token = $this->genToken($rs, true);
+                        $record["token"] = $rs->token;
+                        $rs->ultimo_logueo = date("Y-m-d H:i:s");
+                        $rs->numero_logueos = intval($rs->numero_logueos) + 1;
+                        $record["ultimo_logueo"] = $rs->ultimo_logueo;
+                        $record["numero_logueos"] =$rs->numero_logueos;
+                        Usuario::where("idusuario", $rs->idusuario)->update(json_decode(json_encode($record),true));
                     }else{
-                        if (!$rs->clave_expiracion){
-                            $rs->clave_expiracion = UsuariosController::setCaducidad($rs->idcliente);
-                            $record["clave_expiracion"] = $rs->clave_expiracion;
-                            $mensaje = "Se ha asignado nueva fecha de caducidad a la contraseña, se encontraba sin asignar";
-        
-                            $aud->saveAuditoria([
-                                "idusuario" => $rs->idusuario,
-                                "json" => [],
-                                "mensaje" => $mensaje
-                            ]);
-                        }
 
-                        if ($rs->clave_expiracion < date("Y-m-d H:i:s")){
+                        $cfg = Configuracion::where("idcliente", $rs->idcliente)->get();
+                        foreach ($cfg as $key => $value) {
+                            $cfgrs = $value;
+                        }
+    
+                        $fecha_limite_validez_clave = $cfgrs["fecha_limite_validez_clave"];
+                        if ($fecha_limite_validez_clave && $fecha_limite_validez_clave < date("Y-m-d H:i:s")){
                             $status = false;
-                            $mensaje = "Contraseña caducada";
+                            $mensaje = "CADUCIDAD GENERAL: No se encuentra autorizado para ingresar dado a la fecha límite de caducidad de contraseña que esta determinado en {$fecha_limite_validez_clave}. Consulte con Administración";
                             $data = [];
                             $aud->saveAuditoria([
                                 "idusuario" => $rs->idusuario,
-                                "json" => [],
                                 "mensaje" => $mensaje
                             ]);
-        
-                            HistoricoClaves::create([
-                                "idusuario" => $rs->idusuario,
-                                "clave" => $rs->clave
-                            ]);
-        
-                        } else {
-                            $rs->ultimo_logueo = date("Y-m-d H:i:s");
-                            $rs->numero_logueos = intval($rs->numero_logueos) + 1;
-                            $record["ultimo_logueo"] = $rs->ultimo_logueo;
-                            $record["numero_logueos"] =$rs->numero_logueos;
+                        }else{
+                            if (!$rs->clave_expiracion){
+                                $rs->clave_expiracion = UsuariosController::setCaducidad($rs->idcliente);
+                                $record["clave_expiracion"] = $rs->clave_expiracion;
+                                $mensaje = "Se ha asignado nueva fecha de caducidad a la contraseña, se encontraba sin asignar";
+            
+                                $aud->saveAuditoria([
+                                    "idusuario" => $rs->idusuario,
+                                    "json" => [],
+                                    "mensaje" => $mensaje
+                                ]);
+                            }
     
-                            if (intval($rs->roles->estado) == 0){
+                            if ($rs->clave_expiracion < date("Y-m-d H:i:s")){
                                 $status = false;
-                                $mensaje = "Rol asignado al usuario se encuentra suspendido";
+                                $mensaje = "Contraseña caducada";
                                 $data = [];
                                 $aud->saveAuditoria([
                                     "idusuario" => $rs->idusuario,
-                                    "json" => ["rol" => $rs->roles->idrol, "nombre" => $rs->roles->nombre],
+                                    "json" => [],
                                     "mensaje" => $mensaje
                                 ]);
-                            } else {
-                                if ($rs->token === null) {
-                                    $rs->token = $this->genToken($rs);
-                                    $record["token"] = $rs->token;
-                                    // error_log($rs->token);
-                                } else {
-                                    $val_token = $this->validateToken($rs->token);
-                                    // error_log("Validacion de token");
-                                    // error_log(json_encode($val_token));
-                                    if (!$val_token["validate"]){
-                                        switch ($val_token["mensaje"]){
-                                            case "bad":
-                                                $status = false;
-                                                $data = [];
-                                                $mensaje = "Token inválido";
-                                                $aud->saveAuditoria([
-                                                    "idusuario" => $rs->idusuario,
-                                                    "mensaje" => $mensaje
-                                                ]);
-                                                break;
-                                            case "expire":
-                                                $rs->token = $this->genToken($rs);
-                                                $record["token"] = $rs->token;
-                                                
-                                                break;
-                                        }
-                                    }
-    
-                                    /**
-                                     * TODO: Cuando todo esta bien se genera codigo de verificación
-                                     */
-                                    // error_log("Generando Codigo");
-                                    $codigo = $this->generacionCodigoVerificacion($rs->idusuario);
-                                    // error_log("Enviando Codigo");
-                                    Controller::enviarMensaje($rs->idusuario, "Codigo de verificacion para LISAH es: {$codigo}");
-                                    $record["verificacion_codigo"] = $codigo;
-                                    $record["verificacion_expira"] = date('Y-m-d H:i:s', (strtotime ("+5 Minute")));
-                                    $status = true;
-                                }
-                            }
-    
-                            if ($status){
-                                // error_log("Guardando");
-                                // error_log(json_encode($record));
-                                Usuario::where("idusuario", $rs->idusuario)->update(json_decode(json_encode($record),true));
-                                $aud->saveAuditoria([
+            
+                                HistoricoClaves::create([
                                     "idusuario" => $rs->idusuario,
-                                    "mensaje" => "Logueado"
+                                    "clave" => $rs->clave
                                 ]);
+            
+                            } else {
+                                $rs->ultimo_logueo = date("Y-m-d H:i:s");
+                                $rs->numero_logueos = intval($rs->numero_logueos) + 1;
+                                $record["ultimo_logueo"] = $rs->ultimo_logueo;
+                                $record["numero_logueos"] =$rs->numero_logueos;
+        
+                                if (intval($rs->roles->estado) == 0){
+                                    $status = false;
+                                    $mensaje = "Rol asignado al usuario se encuentra suspendido";
+                                    $data = [];
+                                    $aud->saveAuditoria([
+                                        "idusuario" => $rs->idusuario,
+                                        "json" => ["rol" => $rs->roles->idrol, "nombre" => $rs->roles->nombre],
+                                        "mensaje" => $mensaje
+                                    ]);
+                                } else {
+                                    
+                                    if ($rs->token === null) {
+                                        $rs->token = $this->genToken($rs);
+                                        $record["token"] = $rs->token;
+                                    } else {
+                                        $val_token = $this->validateToken($rs->token);
+                                        if (!$val_token["validate"]){
+                                            switch ($val_token["mensaje"]){
+                                                case "bad":
+                                                    $status = false;
+                                                    $data = [];
+                                                    $mensaje = "Token inválido";
+                                                    $aud->saveAuditoria([
+                                                        "idusuario" => $rs->idusuario,
+                                                        "mensaje" => $mensaje
+                                                    ]);
+                                                    break;
+                                                case "expire":
+                                                    $rs->token = $this->genToken($rs);
+                                                    $record["token"] = $rs->token;
+                                                    
+                                                    break;
+                                            }
+                                        }
+        
+                                        /**
+                                         * TODO: Cuando todo esta bien se genera codigo de verificación
+                                         */
+                                        $codigo = $this->generacionCodigoVerificacion($rs->idusuario);
+                                        Controller::enviarMensaje($rs->idusuario, "Codigo de verificacion para LISAH es: {$codigo}");
+                                        $record["verificacion_codigo"] = $codigo;
+                                        $record["verificacion_expira"] = date('Y-m-d H:i:s', (strtotime ("+5 Minute")));
+                                        $status = true;
+                                    }
+                                }
+        
+                                if ($status){
+                                    Usuario::where("idusuario", $rs->idusuario)->update(json_decode(json_encode($record),true));
+                                    $aud->saveAuditoria([
+                                        "idusuario" => $rs->idusuario,
+                                        "mensaje" => "Logueado"
+                                    ]);
+                                }
                             }
                         }
                     }
+
                 }
             }
             
         }else{
             $status = false;
-            $mensaje = "Usuario no existe o se encuentra inactivo";
+            $mensaje = "Usuario no existe o se encuentra inactivo. Contacte al administrador.";
             $data = [];
             $aud->saveAuditoria([
                 "json" => ["usuario" => $usuario],
@@ -188,6 +194,44 @@ class AuthController extends Controller
             ]);
         }
         return Controller::reponseFormat($status, $data, $mensaje) ;
+    }
+
+    public function logout(Request $request){
+        $status = "";
+        $data = [];
+        $mensaje = "";
+
+        $payload = (Object) Controller::tokenSecurity($request);
+        if ($payload->validate){
+            $status = true;
+            $data = [];
+            $user = Usuario::where("idusuario", $payload->payload["idusuario"])->get();
+            foreach ($user as $key => $value) {
+                $rs = $value;
+            }
+
+            $rs->numero_deslogueos = intval($rs->numero_deslogueos) + 1;
+            $record["numero_deslogueos"] =$rs->numero_deslogueos;
+            
+            Usuario::where("idusuario", $payload->payload["idusuario"])->update(json_decode(json_encode($record),true));
+
+            $mensaje = "Cerrada la sesion con exito";
+            $status = true;
+            $data = [];
+
+
+            $aud = new AuditoriaUsoController();
+            $aud->saveAuditoria([
+                "idusuario" => $rs->idusuario,
+                "json" => null,
+                "mensaje" =>  $mensaje
+            ]);
+        }else{
+            $status = false;
+            $mensaje = $payload->mensaje;
+        }
+
+        return Controller::reponseFormat($status, $data, $mensaje);
     }
 
     public function resetPassword(Request $request)
@@ -257,31 +301,44 @@ class AuthController extends Controller
     }
 
 
-    public function genToken($obj){
-        $cfg = Configuracion::where("idcliente", $obj->idcliente)->get();
-        foreach ($cfg as $key => $value) {
-            $rs = $value;
-        }
-        $tiempo_caducidad_token_usuarios = $rs["tiempo_caducidad_token_usuarios"];
-        $fecha_limite_validez_clave = $rs["fecha_limite_validez_clave"];
-
-        $caducidad_token = date("Y-m-d H:i:s", strtotime('+' . $tiempo_caducidad_token_usuarios . ' hours'));
+    public function genToken($obj, $especial=false){
         
-        if ($fecha_limite_validez_clave){
-            $limite_caducidad = $fecha_limite_validez_clave . " 23:59:59";
-            if ($caducidad_token > $limite_caducidad){
-                    $caducidad_token = $limite_caducidad;
-            }
-        }
+        $idcliente = 0;
+        $idgrupo_usuario = 0;
+        $idrol = $obj->idrol;
+        $idusuario = $obj->idusuario;
 
+        if (!$especial){
+            $cfg = Configuracion::where("idcliente", $obj->idcliente)->get();
+            foreach ($cfg as $key => $value) {
+                $rs = $value;
+            }
+            $tiempo_caducidad_token_usuarios = $rs["tiempo_caducidad_token_usuarios"];
+            $fecha_limite_validez_clave = $rs["fecha_limite_validez_clave"];
+    
+            $caducidad_token = date("Y-m-d H:i:s", strtotime('+' . $tiempo_caducidad_token_usuarios . ' hours'));
+            
+            if ($fecha_limite_validez_clave){
+                $limite_caducidad = $fecha_limite_validez_clave . " 23:59:59";
+                if ($caducidad_token > $limite_caducidad){
+                        $caducidad_token = $limite_caducidad;
+                }
+            }
+            $idcliente = $obj->idcliente;
+            $idgrupo_usuario = $obj->idgrupo_usuario;
+        } else {
+            $idrol = 1;
+            $caducidad_token  = date("Y-m-d H:i:s", strtotime('+10 year'));
+        }
+        
         $rec = [
-            "idcliente" => $obj->idcliente,
-            "idusuario" => $obj->idusuario,
-            "idrol" => $obj->idrol,
-            "idgrupo_usuario" => $obj->idgrupo_usuario,
+            "idcliente" => $idcliente,
+            "idusuario" => $idusuario,
+            "idrol" => $idrol,
+            "idgrupo_usuario" => $idgrupo_usuario,
             "expire_date" => $caducidad_token
         ];
-        // error_log(json_encode($rec));
+
         return base64_encode(Controller::encode(json_encode($rec)));
     }
 

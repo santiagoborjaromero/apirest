@@ -33,6 +33,7 @@ Route::group([
         return ["status" => true, "data" => "Estado server activo"];
     });
     Route::post("login", [AuthController::class, 'authUser']);
+    Route::post("logout", [AuthController::class, 'logout']);
     Route::post("reset", [AuthController::class, 'resetPassword']);
     Route::get("email", [UsuariosController::class, 'envioMails']);
 });
