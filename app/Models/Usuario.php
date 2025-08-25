@@ -19,17 +19,7 @@ class Usuario extends Model
     public $timestamps = true;
     protected $table = "usuarios";
     protected $primaryKey = "idusuario";
-    // protected $fillable = [
-    //     "idrol",
-    //     "idgrupo_usuario",
-    //     "idcliente",
-    //     "estado",
-    //     "nombre",
-    //     "ntfy_identificador",
-    //     "email",
-    //     "usuario",
-    //     "clave"
-    // ];
+
     protected $guarded = ["idusuario"];
     protected $hidden = ["clave","verificacion_codigo","verificacion_expira"];
 

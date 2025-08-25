@@ -36,10 +36,11 @@ class UsuariosController extends Controller
                 }
             }else{
                 $data = Usuario::where("idcliente", $payload->payload["idcliente"])
+                    ->whereRaw("idgrupo_usuario IS NOT NULL")
                     ->with("cliente", "servidores", "roles", "roles.menu", "grupo")->get();
             }
 
-            unset($data->token);
+            // unset($data->token);
         }else{
             $status = false;
             $mensaje = $payload->mensaje;
@@ -79,18 +80,20 @@ class UsuariosController extends Controller
                 switch ($accion){
                     case 'activos':
                         $data = Usuario::where("idcliente", $payload->payload["idcliente"])
+                            ->whereRaw("idgrupo_usuario IS NOT NULL")
                             ->with("cliente",  "servidores", "roles", "roles.menu", "grupo")->get();
                         break;
                     case 'inactivos':
                         $data = Usuario::onlyTrashed()->where("idcliente", $payload->payload["idcliente"])
+                            ->whereRaw("idgrupo_usuario IS NOT NULL")
                             ->with("cliente",  "servidores", "roles", "roles.menu", "grupo")->get();
                         break;
                     case 'todos':
                         $data = Usuario::withTrashed()->where("idcliente", $payload->payload["idcliente"])
+                            ->whereRaw("idgrupo_usuario IS NOT NULL")
                             ->with("cliente", "servidores",  "roles", "roles.menu", "grupo")->get();
                         break;
                 }
-                
             }
 
             unset($data->token);
@@ -135,8 +138,6 @@ class UsuariosController extends Controller
 
         if ($payload->validate){
             try{
-                // $record = $request->input("data") ;
-
                 $rs = Usuario::where("usuario", "=", $request->input("usuario"))
                     ->where("idcliente", $request->input("idcliente"))
                     ->get();
@@ -218,6 +219,8 @@ class UsuariosController extends Controller
         $status = false;
         $data = [];
         $mensaje="";
+        $record_u = [];
+        $record_srv = [];
 
         if ($payload->validate){
             if ($id == ""){
@@ -225,43 +228,72 @@ class UsuariosController extends Controller
                 $mensaje = "El ID está vacío";
             }else{
                 try{
-                    $idrol = $request->input("idrol");
-                    $idgrupo_usuario = $request->input("idgrupo_usuario");
-                    $idcliente = $request->input("idcliente");
-                    $estado = $request->input("estado");
-                    $nombre = $request->input("nombre");
-                    $usuario = $request->input("usuario");
-                    $ntfy_identificador = $request->input("ntfy_identificador");
-                    $email = $request->input("email");
-                    $servidores = $request->input("servidores");
+                    if ($request->input("idrol")){
+                         $record_u["idrol"] = $request->input("idrol"); 
+                    }
+                    if ($request->input("idgrupo_usuario")){
+                         $record_u["idgrupo_usuario"] = $request->input("idgrupo_usuario"); 
+                    }
+                    if ($request->input("idcliente")){
+                         $record_u["idcliente"] = $request->input("idcliente"); 
+                    }
+                    if ($request->input("estado")){
+                         $record_u["estado"] = $request->input("estado"); 
+                    }
+                    if ($request->input("nombre")){
+                         $record_u["nombre"] = $request->input("nombre"); 
+                    }
+                    if ($request->input("usuario")){
+                         $record_u["usuario"] = $request->input("usuario"); 
+                    }
+                    if ($request->input("ntfy_identificador")){
+                         $record_u["ntfy_identificador"] = $request->input("ntfy_identificador"); 
+                    }
+                    if ($request->input("email")){
+                         $record_u["email"] = $request->input("email"); 
+                    }
+                    
+                    // $idgrupo_usuario = $request->input("idgrupo_usuario");
+                    // $idcliente = $request->input("idcliente");
+                    // $estado = $request->input("estado");
+                    // $nombre = $request->input("nombre");
+                    // $usuario = $request->input("usuario");
+                    // $ntfy_identificador = $request->input("ntfy_identificador");
+                    // $email = $request->input("email");
+                    // $servidores = $request->input("servidores");
 
-                    $record_u = [
-                        "idrol" => $idrol,
-                        "idgrupo_usuario" => $idgrupo_usuario,
-                        "idcliente" => $idcliente,
-                        "estado" => $estado,
-                        "nombre" => $nombre,
-                        "usuario" => $usuario,
-                        "ntfy_identificador" => $ntfy_identificador,
-                        "email" => $email,
-                    ];
+                    // $record_u = [
+                    //     "idrol" => $idrol,
+                    //     "idgrupo_usuario" => $idgrupo_usuario,
+                    //     "idcliente" => $idcliente,
+                    //     "estado" => $estado,
+                    //     "nombre" => $nombre,
+                    //     "usuario" => $usuario,
+                    //     "ntfy_identificador" => $ntfy_identificador,
+                    //     "email" => $email,
+                    // ];
+
+                    error_log(json_encode($record_u));
+
                     $data = Usuario::where("idusuario", $id)->update($record_u);
                     
-                    $data_del = ServidorUsuarios::where("idusuario", $id)->delete();
-
-                    $record_srv = [];
-                    foreach ($servidores as $key => $value) {
-                        $record_srv[] = [
-                            "idservidor" => $value["idservidor"],
-                            "idusuario" => $id,
-                        ];
+                    if ($request->input("servidores")){
+                        $data_del = ServidorUsuarios::where("idusuario", $id)->delete();
+    
+                        
+                        foreach ($request->input("servidores") as $key => $value) {
+                            $record_srv[] = [
+                                "idservidor" => $value["idservidor"],
+                                "idusuario" => $id,
+                            ];
+                        }
+                        
+                        $data_srv = DB::table("servidor_usuarios")->insert($record_srv);
                     }
-                    $data_srv = DB::table("servidor_usuarios")->insert($record_srv);
-
                     $status = true;
                 } catch (Exception $err){
                     $status = false;
-                    $mensaje = "No pudo crear " . $err->getMessage();
+                    $mensaje = "No pudo actualizar " . $err->getMessage();
                 }
             }
             
@@ -325,37 +357,16 @@ class UsuariosController extends Controller
                     $respserv = UsuariosController::updateServidores([
                         "usuario" => $user,
                         "clave" => $password,
-                    ],[
-                        "usuario" => $user_ejecutor,
-                        "clave" => $password_ejecutor,
-                    ], $accion);
+                        "idusuario" => $id
+                    ],null, $accion);
 
                     $mensaje = $respserv["mensaje"];
                     $serv_data = $respserv["data"];
 
-                    // $servidores = ServidorUsuarios::with("servidor")->where("idusuario", $id)->get();
-                    // $serv_data = [];
-                    // foreach ($servidores as $key => $value) {
-                    //     $host = $value["servidor"]["host"];
-                    //     $port = $value["servidor"]["ssh_puerto"];
-                        
-                    //     $ssh = new SshController($host, $port, $user_ejecutor, $password_ejecutor);
-                    //     $cmd = "";
-                    //     if ($accion=="activar"){
-                    //         $cmd = 'passwd -l ' . $user . ' -f';
-                    //     }else if ($accion=="inactivar"){
-                    //         $cmd = 'passwd -u ' . $user . ' -f';
-                    //     }
-                    //     $resp = $ssh->run($cmd);
-
-                    //     $mensaje .= "\nServidores:\n$user_ejecutor@$host:$port [$accion] $resp";
-                    //     $serv_data[] = $mensaje;
-                    // }
-
                     $status = true;
                 } catch (Exception $err){
                     $status = false;
-                    $mensaje = "No pudo crear " . $err->getMessage();
+                    $mensaje = "No se pudo " . $accion . " " . $err->getMessage();
                 }
             }
             
@@ -375,39 +386,53 @@ class UsuariosController extends Controller
         return Controller::reponseFormat($status, $data, $mensaje) ;
     }
 
-    static public function updateServidores($data = [], $ejecutor=null, $accion = "clave"){
+    static public function updateServidores($origen = [], $ejecutor=null, $accion = "clave"){
         if (!$ejecutor){
             $ejecutor = [
-                "usuario" => "soft8",
-                "clave" => "RtlEEHHHb4QXi6JyiiJXue4MFfQ7i99a",
+                "usuario" => "lisah",
+                "clave" => "L1s4hUn14nd3s",
             ];
         }
 
-        $$mensaje = "";
+        $mensaje = "";
         $status = false;
         $data = [];
 
-        $servidores = ServidorUsuarios::with("servidor")->where("idusuario", $data["idusuario"])->get();
+        $servidores = ServidorUsuarios::with("servidor")->where("idusuario", $origen["idusuario"])->get();
+        
+        error_log(json_encode($servidores));
+
         foreach ($servidores as $key => $value) {
-            $host = $value["servidor"]["host"];
-            $port = $value["servidor"]["ssh_puerto"];
-            
-            $ssh = new SshController($host, $port, $ejecutor["usuario"], $ejecutor["clave"]);
-            $cmd = "";
-            switch ($accion) {
-                case 'activar':
-                    $cmd = 'passwd -l ' . $data["usuario"] . ' -f';
-                    break;
-                case 'inactivar':
-                    $cmd = 'passwd -u ' . $data["usuario"] . ' -f';
-                    break;
-                case 'clave':
-                    $cmd = 'echo "'. $data["usuario"].':'.$data["clave"].'" | chpasswd';
-                    break;
+            if ($value["servidor"]){
+
+                $host = $value["servidor"]["host"];
+                $port = $value["servidor"]["ssh_puerto"];
+    
+                $ssh = new SshController($host, $port, $ejecutor["usuario"], $ejecutor["clave"]);
+                $cmd = "";
+                switch ($accion) {
+                    case 'activar':
+                        $cmd = 'sudo passwd -l ' . $origen["usuario"] . ' -f';
+                        break;
+                    case 'inactivar':
+                        $cmd = 'sudo passwd -u ' . $origen["usuario"] . ' -f';
+                        break;
+                    case 'clave':
+                        $cmd = 'sudo echo "'. $origen["usuario"].':'.$origen["clave"].'" | chpasswd';
+                        break;
+                }
+                
+                error_log($cmd);
+                
+                $resp = $ssh->run($cmd);
+                $mensaje .= "\nServidores:\n".$ejecutor["usuario"]."@$host:$port [$accion] $resp";
+                
+                error_log($mensaje);
+    
+                $data[] = $mensaje;
             }
-            $resp = $ssh->run($cmd);
-            $mensaje .= "\nServidores:\n".$ejecutor["usuario"]."@$host:$port [$accion] $resp";
-            $data[] = $mensaje;
+            // $host = $value["servidor"]["host"];
+            // $port = $value["servidor"]["ssh_puerto"];
         }
 
         return [
@@ -433,8 +458,6 @@ class UsuariosController extends Controller
                 $data=[];
                 try{
                     $resp = UsuariosController::setPassword($id, $payload->payload["idcliente"]);
-
-
                     $status = $resp["status"];
                     $mensaje = $resp["mensaje"];
                 }catch(Exception $err){
@@ -485,7 +508,8 @@ class UsuariosController extends Controller
 
             UsuariosController::updateServidores([
                 "usuario" => $rs->usuario,
-                "clave"   => $clave
+                "clave"   => $clave,
+                "idusuario" => $id
             ],null,"clave");
 
             $mensaje = "Clave generada con éxito";

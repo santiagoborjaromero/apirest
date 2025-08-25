@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -20,4 +22,10 @@ class RolMenuGrupos extends Model
     {
         return $this->hasMany(RolMenu::class, "idrol_menu", "idrol_menu");
     }
+
+    // public function menu(): BelongsTo
+    // {
+    //     // return $this->belongsToMany(Menu::class, 'rol_menu', 'idrol', 'idmenu');
+    //     return $this->belongsTo(Menu::class, 'rol_menu', 'idrol_menu', 'idmenu');
+    // }
 }

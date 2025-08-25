@@ -26,18 +26,10 @@ class Roles extends Model
 
     public function menu(): BelongsToMany
     {
-        // return $this->belongsToMany(Menu::class, RolMenu::class, "idmenu", "idrol");
-        // return $this->belongsToMany(Menu::class, "rol_menu", "idmenu", "idrol");
-        // return $this->hasManyThrough(
-        //     RolMenu::class, 
-        //     Menu::class,
-        //     'idmenu', // Foreign key MENU 
-        //     'idmenu', // Foreign key ROLMENU
-        //     'idrol', // Local key on the USUARIO
-        //     'idmenu' // Local key on the MENU
-        // );
         return $this->belongsToMany(Menu::class, 'rol_menu', 'idrol', 'idmenu');
     }
+
+    
 
     
 }

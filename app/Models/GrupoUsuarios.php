@@ -39,4 +39,10 @@ class GrupoUsuarios extends Model
     {
         return $this->hasMany(RolMenuGrupos::class, "idgrupo_usuario", "idgrupo_usuario");
     }
+
+    // public function menu(): BelongsToMany
+    // {
+    //     // return $this->belongsToMany(Menu::class, 'rol_menu', 'idrol', 'idmenu');
+    //     return $this->belongsToMany(Menu::class, 'rolmenu_grupos', 'idrol_menu', 'idmenu');
+    // }
 }

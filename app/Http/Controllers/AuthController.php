@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\UsuariosCollection;
 use App\Models\AuditoriaUso;
+use App\Models\Cliente;
 use App\Models\Configuracion;
 use App\Models\HistoricoClaves;
 use App\Models\HistoricoCodigoVerificacion;
+use App\Models\Menu;
+use App\Models\RolMenu;
 use App\Models\Usuario;
 use Exception;
 use Illuminate\Http\Request;
@@ -15,7 +18,7 @@ class AuthController extends Controller
 {
     public function authUser(Request $request)
     {
-        $usuario = $request->input("usuario");   //$_POST["usuario"]
+        $usuario = $request->input("usuario"); 
         $clave = $request->input("clave");
 
         $aud = new AuditoriaUsoController();
@@ -25,16 +28,62 @@ class AuthController extends Controller
         $status = true;
         $mensaje = "";
         $data = null;
+        $superuser = false;
 
-        $data = Usuario::where("usuario", $usuario)->where("estado", 1)
-            ->with("cliente", "roles", "roles.menu", "config", "grupo")
+        $data = Usuario::where("usuario", $usuario)
+            ->with("cliente", "roles.menu", "config", "grupo.rolmenugrupos.rolmenu.menu", )
             ->get();
+
+        error_log("DATA");
+        error_log(json_encode($data) );
 
         foreach ($data as $key => $value) {
             $rs = $value;
         }
 
         if (count($data)>0){
+            
+            if ($rs->estado == 0){
+
+                
+                error_log($rs->cliente["idusuario"] );
+                error_log($rs->idusuario);
+              
+                if ($rs->cliente && $rs->cliente["idusuario"] == $rs->idusuario){
+
+                    error_log("Entro Zona SuperUsuario");
+
+                    $record["estado"] = 1;
+                    // $record["idgrupo_usuario"] = 0;
+                    $superuser = true;
+
+                    $menu = RolMenu::with("menu")->where("idrol", 3)->get();
+
+                    $roles = [
+                        "roles" => [
+                            "idrol" => 1,
+                            "nombre" => "Super Usuario",
+                            "permisos_crud" => "RWD",
+                            "estado" => 1,
+                            "menu" => $menu
+                        ]
+                    ];
+                    $data["roles"] = $roles;
+
+                    error_log(json_encode($record));
+                }else{
+                    $superuser = false;
+                    $status = false;
+                    $mensaje = "Usuario se encuentra inactivo. Contacte al administrador.";
+                    $data = [];
+                    $aud->saveAuditoria([
+                        "json" => ["usuario" => $usuario],
+                        "mensaje" => $mensaje
+                    ]);
+                    return Controller::reponseFormat($status, $data, $mensaje) ;
+                }
+            }
+
             $status = true;
 
             if ($rs->clave === null || $rs->clave == "cambiar" || $rs->clave == ""){
@@ -44,12 +93,16 @@ class AuthController extends Controller
                     "mensaje" => $mensaje
                 ]);
                 $status = false;
-                $data = [];
+                $data = []; 
                 $newclave = Controller::generacionClave();
                 $msg = $mensaje . " " . $newclave;
                 Controller::enviarMensaje($rs->idusuario, $msg);
                 $record["clave"] = Controller::encode($newclave);
-                $record["clave_expiracion"] = UsuariosController::setCaducidad($rs->idcliente);
+                if ($superuser){
+                    $record["clave_expiracion"] = date("Y-m-d H:i:s", strtotime("+50 year"));
+                }else{
+                    $record["clave_expiracion"] = UsuariosController::setCaducidad($rs->idcliente);
+                }
                 Usuario::where("idusuario", $rs->idusuario)->update(json_decode(json_encode($record),true));
             } else {
                 if ( Controller::encode($clave) != $rs->clave ){
@@ -67,6 +120,7 @@ class AuthController extends Controller
                 } else {
 
                     if (!$rs->idcliente){
+                        error_log("No tiene cliente");
                         $rs->token = $this->genToken($rs, true);
                         $record["token"] = $rs->token;
                         $rs->ultimo_logueo = date("Y-m-d H:i:s");
@@ -75,14 +129,16 @@ class AuthController extends Controller
                         $record["numero_logueos"] =$rs->numero_logueos;
                         Usuario::where("idusuario", $rs->idusuario)->update(json_decode(json_encode($record),true));
                     }else{
-
+                        error_log("Si tiene cliente");
                         $cfg = Configuracion::where("idcliente", $rs->idcliente)->get();
                         foreach ($cfg as $key => $value) {
                             $cfgrs = $value;
                         }
     
                         $fecha_limite_validez_clave = $cfgrs["fecha_limite_validez_clave"];
-                        if ($fecha_limite_validez_clave && $fecha_limite_validez_clave < date("Y-m-d H:i:s")){
+
+                        if ($fecha_limite_validez_clave && $fecha_limite_validez_clave < date("Y-m-d H:i:s") && !$superuser){
+                            error_log("Caducidad General");
                             $status = false;
                             $mensaje = "CADUCIDAD GENERAL: No se encuentra autorizado para ingresar dado a la fecha límite de caducidad de contraseña que esta determinado en {$fecha_limite_validez_clave}. Consulte con Administración";
                             $data = [];
@@ -91,7 +147,9 @@ class AuthController extends Controller
                                 "mensaje" => $mensaje
                             ]);
                         }else{
-                            if (!$rs->clave_expiracion){
+                            error_log("Caducidad Normal");
+                            if (!$rs->clave_expiracion  && !$superuser){
+                                error_log("Si tiene fecha de caducidad");
                                 $rs->clave_expiracion = UsuariosController::setCaducidad($rs->idcliente);
                                 $record["clave_expiracion"] = $rs->clave_expiracion;
                                 $mensaje = "Se ha asignado nueva fecha de caducidad a la contraseña, se encontraba sin asignar";
@@ -103,7 +161,8 @@ class AuthController extends Controller
                                 ]);
                             }
     
-                            if ($rs->clave_expiracion < date("Y-m-d H:i:s")){
+                            if ($rs->clave_expiracion < date("Y-m-d H:i:s") && !$superuser ){
+                                error_log("Se caduco contraseña");
                                 $status = false;
                                 $mensaje = "Contraseña caducada";
                                 $data = [];
@@ -119,14 +178,17 @@ class AuthController extends Controller
                                 ]);
             
                             } else {
+                                error_log("Proceso ultimo_logueo");
+
                                 $rs->ultimo_logueo = date("Y-m-d H:i:s");
                                 $rs->numero_logueos = intval($rs->numero_logueos) + 1;
                                 $record["ultimo_logueo"] = $rs->ultimo_logueo;
                                 $record["numero_logueos"] =$rs->numero_logueos;
         
                                 if (intval($rs->roles->estado) == 0){
+                                    error_log("Estado del Rol en Cero 0");
                                     $status = false;
-                                    $mensaje = "Rol asignado al usuario se encuentra suspendido";
+                                    $mensaje = "Rol Cliente  se encuentra suspendido";
                                     $data = [];
                                     $aud->saveAuditoria([
                                         "idusuario" => $rs->idusuario,
@@ -134,12 +196,15 @@ class AuthController extends Controller
                                         "mensaje" => $mensaje
                                     ]);
                                 } else {
-                                    
+                                    error_log("Rol Cliente OK");
                                     if ($rs->token === null) {
+                                        error_log("Genera Token");
                                         $rs->token = $this->genToken($rs);
                                         $record["token"] = $rs->token;
                                     } else {
+                                        error_log("Valida Token");
                                         $val_token = $this->validateToken($rs->token);
+                                        error_log($val_token["validate"]);
                                         if (!$val_token["validate"]){
                                             switch ($val_token["mensaje"]){
                                                 case "bad":
@@ -150,11 +215,13 @@ class AuthController extends Controller
                                                         "idusuario" => $rs->idusuario,
                                                         "mensaje" => $mensaje
                                                     ]);
+                                                    error_log($mensaje);
                                                     break;
                                                 case "expire":
+                                                    error_log("Expirado");
                                                     $rs->token = $this->genToken($rs);
                                                     $record["token"] = $rs->token;
-                                                    
+                                                    error_log("Generado nuevamente token");
                                                     break;
                                             }
                                         }
@@ -162,6 +229,8 @@ class AuthController extends Controller
                                         /**
                                          * TODO: Cuando todo esta bien se genera codigo de verificación
                                          */
+
+                                        error_log("Generacion de Codigo de Verificacion");
                                         $codigo = $this->generacionCodigoVerificacion($rs->idusuario);
                                         Controller::enviarMensaje($rs->idusuario, "Codigo de verificacion para LISAH es: {$codigo}");
                                         $record["verificacion_codigo"] = $codigo;
@@ -171,7 +240,12 @@ class AuthController extends Controller
                                 }
         
                                 if ($status){
-                                    Usuario::where("idusuario", $rs->idusuario)->update(json_decode(json_encode($record),true));
+                                    error_log("Record final");
+                                    error_log(json_encode($record));
+                                    $rt = Usuario::where("idusuario", $rs->idusuario)->update(json_decode(json_encode($record),true));
+                                    error_log("Luego de actualizacion del usuario");
+                                    error_log(json_encode($rt));
+
                                     $aud->saveAuditoria([
                                         "idusuario" => $rs->idusuario,
                                         "mensaje" => "Sesión establecida con éxito"
@@ -193,6 +267,7 @@ class AuthController extends Controller
                 "mensaje" => $mensaje
             ]);
         }
+        error_log("Se fue");
         return Controller::reponseFormat($status, $data, $mensaje) ;
     }
 
@@ -312,9 +387,10 @@ class AuthController extends Controller
             foreach ($cfg as $key => $value) {
                 $rs = $value;
             }
+
             $tiempo_caducidad_token_usuarios = $rs["tiempo_caducidad_token_usuarios"];
             $fecha_limite_validez_clave = $rs["fecha_limite_validez_clave"];
-    
+
             $caducidad_token = date("Y-m-d H:i:s", strtotime('+' . $tiempo_caducidad_token_usuarios . ' hours'));
             
             if ($fecha_limite_validez_clave){
@@ -342,11 +418,16 @@ class AuthController extends Controller
     }
 
     public function validateToken($token){
+        error_log("******* validateToken *******");
         $conclusion = false;
         $msg = "";
         
         $payload = json_decode(Controller::decode(base64_decode($token)), true);
         if ($payload){
+            
+            error_log($payload["expire_date"] );
+            error_log(date("Y-m-d H:i:s"));
+
             if ($payload["expire_date"] >= date("Y-m-d H:i:s")){
                 $conclusion = true;
                 $msg = "";
@@ -355,33 +436,44 @@ class AuthController extends Controller
                 $msg = "expire";
             }
 
+            error_log("Es valido el token si o no?");
+            error_log($conclusion);
+
             $cfg = Configuracion::where("idcliente", $payload["idcliente"])->get();
             foreach ($cfg as $key => $value) {
                 $rs = $value;
             }
             $fecha_limite_validez_clave = $rs["fecha_limite_validez_clave"];
-
+            error_log("fecha_limite_validez_clave");
+            error_log($fecha_limite_validez_clave);
+            
             if ($fecha_limite_validez_clave && $payload["idgrupo_usuario"]){
+                error_log("Si tien grupo id");
                 
                 $limite_caducidad =  $fecha_limite_validez_clave . " 23:59:59";
 
-                if (Controller::validateDate($limite_caducidad)){
+                $esFecha = Controller::validateDate($limite_caducidad);
+                error_log("Es fecha");
+                error_log($esFecha);
+                if ($esFecha){
+                    error_log("Limite de caducidad");
+                    error_log($limite_caducidad);
+
                     if ($payload["expire_date"] > $limite_caducidad){
                         $conclusion = false;
                         $msg = "expire";
+                        $record_u = [ 
+                            "estado" => 0 ,
+                            "clave_expiracion" => $limite_caducidad
+                        ];
+                        Usuario::where("idcliente", $payload["idcliente"])->update($record_u);
+                        $aud = new AuditoriaUsoController();
+                        $aud->saveAuditoria([
+                            "idusuario" => $payload->payload["idusuario"],
+                            "mensaje" => "Caducidad de contraseñas general se desactiva usuarios"
+                        ]);
                     }
-    
-                    $record_u = [ 
-                        "estado" => 0 ,
-                        "clave_expiracion" => $limite_caducidad
-                    ];
-                    Usuario::where("idcliente", $payload["idcliente"])->update($record_u);
-    
-                    $aud = new AuditoriaUsoController();
-                    $aud->saveAuditoria([
-                        "idusuario" => $payload->payload["idusuario"],
-                        "mensaje" => "Caducidad de contraseñas general se desactiva usuarios"
-                    ]);
+
                 }
             }
         }else{

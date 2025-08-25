@@ -55,6 +55,7 @@ class ConfiguracionController extends Controller
 
             $record_cfg = [
                 "idcliente" => $request->input("idcliente"),
+                "idusuario" => $request->input("idusuario"),
                 "ldap_servidor" => $request->input("ldap_servidor"),
                 "ldap_puerto" => $request->input("ldap_puerto"),
                 "ldap_usuario" => $request->input("ldap_usuario"),
