@@ -82,7 +82,8 @@ class MenuController extends Controller
                 $status = true;
                 $aud->saveAuditoria([
                     "idusuario" => $payload->payload["idusuario"],
-                    "json" => $record
+                    "json" => $record,
+                    "descripcion" => "Creación de Menu de Opciones"
                 ]);
             } catch( Exception $err){
                 $status = false;

@@ -186,7 +186,8 @@ class ServidoresController extends Controller
 
             $aud->saveAuditoria([
                 "idusuario" => $payload->payload["idusuario"],
-                "json" => $record
+                "json" => $record,
+                "descripcion" => "Creación de Servidores"
             ]);
         }
         return Controller::reponseFormat($status, $data, $mensaje) ;
@@ -231,7 +232,8 @@ class ServidoresController extends Controller
                 }
                 $aud->saveAuditoria([
                     "idusuario" => $payload->payload["idusuario"],
-                    "json" => $record
+                    "json" => $record,
+                    "descripcion" => "Actualización de Servidores"
                 ]);
             } else {
                 $status = false;
@@ -262,6 +264,7 @@ class ServidoresController extends Controller
                 Servidores::where("idservidor", $id)->delete();
                 $aud->saveAuditoria([
                     "idusuario" => $payload->payload["idusuario"],
+                    "descripcion" => "Eliminado de Servidores"
                 ]);
             } else {
                 $status = false;
@@ -290,6 +293,7 @@ class ServidoresController extends Controller
                 Servidores::where("idservidor", $id)->restore();
                 $aud->saveAuditoria([
                     "idusuario" => $payload->payload["idusuario"],
+                    "descripcion" => "Recuperación de Servidores"
                 ]);
             } else {
                 $status = false;
@@ -356,7 +360,8 @@ class ServidoresController extends Controller
                             "user"=>$user,
                             "result"=>$data
                         ],
-                        "mensaje" => $mensaje
+                        "mensaje" => $mensaje,
+                        "descripcion" => "Comprobación estado api"
                     ]);
                 }catch(Exception $err){
                     $status = false;

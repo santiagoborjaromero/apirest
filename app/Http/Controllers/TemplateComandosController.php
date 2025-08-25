@@ -121,7 +121,8 @@ class TemplateComandosController extends Controller
                 
                 $aud->saveAuditoria([
                     "idusuario" => $payload->payload["idusuario"],
-                    "json" => $record
+                    "json" => $record,
+                    "descripcion" => "Creación de Comandos"
                 ]);
             }
         }
@@ -159,7 +160,8 @@ class TemplateComandosController extends Controller
 
                 $aud->saveAuditoria([
                     "idusuario" => $payload->payload["idusuario"],
-                    "json" => $record
+                    "json" => $record,
+                    "descripcion" => "Actualización de Comandos"
                 ]);
             } else {
                 $status = false;
@@ -189,6 +191,7 @@ class TemplateComandosController extends Controller
                 TemplateComandos::where("idtemplate_comando", $id)->delete();
                 $aud->saveAuditoria([
                     "idusuario" => $payload->payload["idusuario"],
+                    "descripcion" => "Eliminado de Comandos"
                 ]);
             } else {
                 $status = false;
@@ -217,6 +220,7 @@ class TemplateComandosController extends Controller
                 TemplateComandos::where("idtemplate_comando", $id)->restore();
                 $aud->saveAuditoria([
                     "idusuario" => $payload->payload["idusuario"],
+                    "descripcion" => "Recuperación de Comandos"
                 ]);
             } else {
                 $status = false;

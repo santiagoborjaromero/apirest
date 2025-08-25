@@ -204,7 +204,8 @@ class UsuariosController extends Controller
             $aud = new AuditoriaUsoController();
             $aud->saveAuditoria([
                 "idusuario" => $payload->payload["idusuario"],
-                "json" => $record_u
+                "json" => $record_u,
+                "descripcion" => "Creación de Usuarios"
             ]);
         }else{
             $status = false;
@@ -304,7 +305,8 @@ class UsuariosController extends Controller
                     "usuario" => $record_u,
                     "servidores" => $record_srv
                 ],
-                "mensaje" =>$mensaje
+                "mensaje" =>$mensaje,
+                "descripcion" => "Actualización de Usuarios"
             ]);
         }else{
             $status = false;
@@ -377,7 +379,8 @@ class UsuariosController extends Controller
                     "usuario" => $record_u,
                     "servidores" => $serv_data
                 ],
-                "mensaje" =>$mensaje
+                "mensaje" =>$mensaje,
+                "descripcion" => "Activación/Inactivación de Usuarios"
             ]);
         }else{
             $status = false;
@@ -478,7 +481,8 @@ class UsuariosController extends Controller
                 "status" => $status,
                 "razon" => "Cambio o reseteo de contraseña desde el LISAH Administrador"
             ],
-            "mensaje" => $mensaje
+            "mensaje" => $mensaje,
+            "descripcion" => "Actualización de Contraseñas de Usuario"
         ]);
         return Controller::reponseFormat($status, $data, $mensaje) ;
     }
@@ -565,7 +569,8 @@ class UsuariosController extends Controller
             $aud = new AuditoriaUsoController();
             $aud->saveAuditoria([
                 "idusuario" => $payload->payload["idusuario"],
-                "mensaje" =>$mensaje
+                "mensaje" =>$mensaje,
+                "descripcion" => "Eliminado de Usuarios"
             ]);
         }else{
             $status = false;
@@ -594,6 +599,7 @@ class UsuariosController extends Controller
                 Usuario::where("idusuario", $id)->restore();
                 $aud->saveAuditoria([
                     "idusuario" => $payload->payload["idusuario"],
+                    "descripcion" => "Recuperación de Usuarios"
                 ]);
             } else {
                 $status = false;

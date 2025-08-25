@@ -94,7 +94,8 @@ class ConfiguracionController extends Controller
                 "idusuario" => $payload->payload["idusuario"],
                 "json" => [
                     "cliente" => $record_clie,
-                    "configuracion" => $record_cfg
+                    "configuracion" => $record_cfg,
+                    "descripcion" => "Actualizacion de Configuración"
                 ]
             ]);
         }

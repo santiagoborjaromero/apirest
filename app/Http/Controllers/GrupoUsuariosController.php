@@ -141,7 +141,8 @@ class GrupoUsuariosController extends Controller
                 "idusuario" => $payload->payload["idusuario"],
                 "json" => [
                     "grupo_usuario" => $record_g,
-                    "rolmenu_grupos" => $record
+                    "rolmenu_grupos" => $record,
+                    "descripcion" => "Actualización de Grupo de Usuario"
                 ]
             ]);
 
@@ -204,7 +205,8 @@ class GrupoUsuariosController extends Controller
                     "idusuario" => $payload->payload["idusuario"],
                     "json" => [
                         "grupo_usuario" => $record_g,
-                        "rolmenu_grupos" => $record
+                        "rolmenu_grupos" => $record,
+                        "descripcion" => "Actualización de Grupo de Usuario"
                     ]
                 ]);
             } else {
@@ -236,6 +238,7 @@ class GrupoUsuariosController extends Controller
                 RolMenuGrupos::where("idgrupo_usuario", $id)->delete();
                 $aud->saveAuditoria([
                     "idusuario" => $payload->payload["idusuario"],
+                    "descripcion" => "Eliminado de Grupo de Usuario"
                 ]);
             } else {
                 $status = false;
@@ -264,6 +267,7 @@ class GrupoUsuariosController extends Controller
                 GrupoUsuarios::where("idgrupo_usuario", $id)->restore();
                 $aud->saveAuditoria([
                     "idusuario" => $payload->payload["idusuario"],
+                    "descripcion" => "Recuperación de Grupo de Usuario"
                 ]);
             } else {
                 $status = false;

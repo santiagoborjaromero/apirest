@@ -114,7 +114,8 @@ class ScriptsController extends Controller
             $aud = new AuditoriaUsoController();
             $aud->saveAuditoria([
                 "idusuario" => $payload->payload["idusuario"],
-                "json" => $record
+                "json" => $record,
+                "descripcion" => "Creación de Scripts"
             ]);
         }else{
             $status = false;
@@ -163,7 +164,8 @@ class ScriptsController extends Controller
                 $aud = new AuditoriaUsoController();
                 $aud->saveAuditoria([
                     "idusuario" => $payload->payload["idusuario"],
-                    "json" => $record
+                    "json" => $record,
+                    "descripcion" => "Actualización de Scripts"
                 ]);
             }else{
                 $status = false;

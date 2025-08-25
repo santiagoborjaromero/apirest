@@ -78,7 +78,8 @@ class AuthController extends Controller
                     $data = [];
                     $aud->saveAuditoria([
                         "json" => ["usuario" => $usuario],
-                        "mensaje" => $mensaje
+                        "mensaje" => $mensaje,
+                        "descripcion" => "Error"
                     ]);
                     return Controller::reponseFormat($status, $data, $mensaje) ;
                 }
@@ -90,7 +91,8 @@ class AuthController extends Controller
                 $mensaje = "Se establece nueva contraseña";
                 $aud->saveAuditoria([
                     "idusuario" => $rs->idusuario,
-                    "mensaje" => $mensaje
+                    "mensaje" => $mensaje,
+                    "descripcion" => "Error"
                 ]);
                 $status = false;
                 $data = []; 
@@ -114,7 +116,8 @@ class AuthController extends Controller
                         "json" => [
                             "usuario" => $usuario,
                         ],
-                        "mensaje" => $mensaje
+                        "mensaje" => $mensaje,
+                        "descripcion" => "Error"
                     ]);
                     Controller::enviarMensaje($rs->idusuario, $mensaje);
                 } else {
@@ -144,7 +147,8 @@ class AuthController extends Controller
                             $data = [];
                             $aud->saveAuditoria([
                                 "idusuario" => $rs->idusuario,
-                                "mensaje" => $mensaje
+                                "mensaje" => $mensaje,
+                                "descripcion" => "Caducidad"
                             ]);
                         }else{
                             error_log("Caducidad Normal");
@@ -157,7 +161,8 @@ class AuthController extends Controller
                                 $aud->saveAuditoria([
                                     "idusuario" => $rs->idusuario,
                                     "json" => [],
-                                    "mensaje" => $mensaje
+                                    "mensaje" => $mensaje,
+                                    "descripcion" => "Error"
                                 ]);
                             }
     
@@ -169,7 +174,8 @@ class AuthController extends Controller
                                 $aud->saveAuditoria([
                                     "idusuario" => $rs->idusuario,
                                     "json" => [],
-                                    "mensaje" => $mensaje
+                                    "mensaje" => $mensaje,
+                                    "descripcion" => "Caducidad"
                                 ]);
             
                                 HistoricoClaves::create([
@@ -193,7 +199,8 @@ class AuthController extends Controller
                                     $aud->saveAuditoria([
                                         "idusuario" => $rs->idusuario,
                                         "json" => ["rol" => $rs->roles->idrol, "nombre" => $rs->roles->nombre],
-                                        "mensaje" => $mensaje
+                                        "mensaje" => $mensaje,
+                                        "descripcion" => "Suspensión"
                                     ]);
                                 } else {
                                     error_log("Rol Cliente OK");
@@ -213,7 +220,8 @@ class AuthController extends Controller
                                                     $mensaje = "Token inválido";
                                                     $aud->saveAuditoria([
                                                         "idusuario" => $rs->idusuario,
-                                                        "mensaje" => $mensaje
+                                                        "mensaje" => $mensaje,
+                                                        "descripcion" => "Token Invalido"
                                                     ]);
                                                     error_log($mensaje);
                                                     break;
@@ -248,7 +256,8 @@ class AuthController extends Controller
 
                                     $aud->saveAuditoria([
                                         "idusuario" => $rs->idusuario,
-                                        "mensaje" => "Sesión establecida con éxito"
+                                        "mensaje" => "Sesión establecida con éxito",
+                                        "descripcion" => "Autenticación de Usuario"
                                     ]);
                                 }
                             }
@@ -264,7 +273,8 @@ class AuthController extends Controller
             $data = [];
             $aud->saveAuditoria([
                 "json" => ["usuario" => $usuario],
-                "mensaje" => $mensaje
+                "mensaje" => $mensaje,
+                "descripcion" => "Error"
             ]);
         }
         error_log("Se fue");
@@ -290,7 +300,7 @@ class AuthController extends Controller
             
             Usuario::where("idusuario", $payload->payload["idusuario"])->update(json_decode(json_encode($record),true));
 
-            $mensaje = "Sesión cerrada con éxtito";
+            $mensaje = "Sesión cerrada con éxito";
             $status = true;
             $data = [];
 
@@ -298,7 +308,8 @@ class AuthController extends Controller
             $aud->saveAuditoria([
                 "idusuario" => $rs->idusuario,
                 "json" => null,
-                "mensaje" =>  $mensaje
+                "mensaje" =>  $mensaje,
+                "descripcion" => "Cierre de Sesión de Usuario"
             ]);
         }else{
             $status = false;
@@ -335,7 +346,8 @@ class AuthController extends Controller
                 $mensaje = "Se establece nueva contraseña";
                 $aud->saveAuditoria([
                     "idusuario" => $rs->idusuario,
-                    "mensaje" => $mensaje
+                    "mensaje" => $mensaje,
+                    "descripcion" => "Actualizacion de contraseña de Usuarios"
                 ]);
                 $status = false;
                 $data = [];
@@ -350,7 +362,8 @@ class AuthController extends Controller
                         "json" => [
                             "usuario" => $usuario,
                         ],
-                        "mensaje" => $mensaje
+                        "mensaje" => $mensaje,
+                        "descripcion" => "Error"
                     ]);
                     Controller::enviarMensaje($rs->idusuario, $mensaje);
                 } else {
@@ -358,7 +371,8 @@ class AuthController extends Controller
                     $mensaje = "Se ha establecido nueva contraseña";
                     $aud->saveAuditoria([
                         "idusuario" => $rs->idusuario,
-                        "mensaje" => $mensaje
+                        "mensaje" => $mensaje,
+                        "descripcion" => "Actualizacion de contraseña de Usuarios"
                     ]);
                 }
             }
@@ -368,7 +382,8 @@ class AuthController extends Controller
             $data = [];
             $aud->saveAuditoria([
                 "json" => ["usuario" => $usuario],
-                "mensaje" => $mensaje
+                "mensaje" => $mensaje,
+                "descripcion" => "Error"
             ]);
         }
         return Controller::reponseFormat($status, $data, $mensaje) ;
@@ -470,7 +485,8 @@ class AuthController extends Controller
                         $aud = new AuditoriaUsoController();
                         $aud->saveAuditoria([
                             "idusuario" => $payload->payload["idusuario"],
-                            "mensaje" => "Caducidad de contraseñas general se desactiva usuarios"
+                            "mensaje" => "Caducidad de contraseñas general se desactiva usuarios",
+                            "descripcion" => "Caducidad General"
                         ]);
                     }
 
@@ -568,7 +584,8 @@ class AuthController extends Controller
                 $aud = new AuditoriaUsoController();
                 $aud->saveAuditoria([
                     "idusuario" => $payload->payload["idusuario"],
-                    "mensaje" => $mensaje
+                    "mensaje" => $mensaje,
+                    "descripcion" => "Autorización MFA"
                 ]);
             }
         }
