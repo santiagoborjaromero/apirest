@@ -6,6 +6,7 @@ use App\Http\Controllers\ClientesController;
 use App\Http\Controllers\ComandosController;
 use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GrupoUsuariosController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RolMenuController;
@@ -118,5 +119,7 @@ Route::group([
      */
     Route::get("histocmd", [AuditoriaUsoController::class, 'getHCmd']);
     Route::get("auditoria/{data}", [AuditoriaUsoController::class, 'getAuditoria']);
+    Route::get("acciones_audit/{id}", [AuditoriaUsoController::class, 'accionesAudit']);
+    Route::get("ultimas_acciones_audit/{id}", [AuditoriaUsoController::class, 'ultimasAccionesAudit']);
     // Route::get("auditoria/{data}/{metodo}/{fechaini}/{fechafin}", [AuditoriaUsoController::class, 'getAuditoria']);
 });

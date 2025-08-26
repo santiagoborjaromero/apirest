@@ -6,7 +6,9 @@ use App\Models\AuditoriaUso;
 use App\Http\Requests\StoreAuditoriaUsoRequest;
 use App\Http\Requests\UpdateAuditoriaUsoRequest;
 use App\Models\HistoricoCmd;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AuditoriaUsoController extends Controller
 {
@@ -101,6 +103,65 @@ class AuditoriaUsoController extends Controller
         }else{
             $status = false;
             $mensaje = $payload->mensaje;
+        }
+        return Controller::reponseFormat($status, $data, $mensaje) ;
+    }
+
+    public function accionesAudit(Request $request, $id){
+        $status = false;
+        $mensaje = "";
+        $data = [];
+        error_log("accionesAudit");
+
+        $payload = (Object) Controller::tokenSecurity($request);
+        if (!$payload->validate){
+            $status = false;
+            $mensaje = $payload->mensaje;
+        }else{
+            error_log($id);
+    
+            try{
+                $sql = "SELECT
+                        descripcion,
+                        count(*) as total
+                    FROM auditoria_uso 
+                    GROUP BY idusuario, descripcion 
+                    HAVING idusuario = ?
+                    ORDER BY count(*) DESC LIMIT 10";
+                $data = DB::select($sql, [$id]);
+                $mensaje = "";
+                $status = true;
+    
+            }catch(Exception $err){
+                $status = false;
+                $mensaje = $err;
+            }
+        }
+        return Controller::reponseFormat($status, $data, $mensaje) ;
+    }
+
+    public function ultimasAccionesAudit(Request $request, $id){
+        $status = false;
+        $mensaje = "";
+        $data = [];
+        error_log("accionesAudit");
+
+        $payload = (Object) Controller::tokenSecurity($request);
+        if (!$payload->validate){
+            $status = false;
+            $mensaje = $payload->mensaje;
+        }else{
+            error_log($id);
+    
+            try{
+                $data = AuditoriaUso::orderBy('created_at', 'desc')->skip(0)->take(10)->get();
+                $mensaje = "";
+                $status = true;
+    
+            }catch(Exception $err){
+                $status = false;
+                $mensaje = $err;
+            }
         }
         return Controller::reponseFormat($status, $data, $mensaje) ;
     }
