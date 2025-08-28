@@ -628,7 +628,7 @@ class AuthController extends Controller
         }else{
             $status = true;
 
-            $mg = Mailgun::create('b80b5e1fec222ff50921742c68db0d59-5a4acb93-6b309fad');
+            $mg = Mailgun::create(env("MAILGUN_SECRET"));
             $result = $mg->messages()->send(
                 'sandbox40c2cec5c50d4847b0c881e2a0aca554.mailgun.org',
                 [
