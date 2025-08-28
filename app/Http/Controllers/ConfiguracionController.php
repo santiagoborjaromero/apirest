@@ -51,6 +51,7 @@ class ConfiguracionController extends Controller
                 "identificacion" => $request->input("cliente_identificacion"),
                 "direccion" => $request->input("cliente_direccion"),
                 "telefono" => $request->input("cliente_telefono"),
+                "idusuario" => $request->input("idusuario"),
             ];
 
             $record_cfg = [

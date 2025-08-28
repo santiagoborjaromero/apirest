@@ -602,17 +602,19 @@ class AuthController extends Controller
         $subject = "LISAH APP";
         $to = "Santiago Borja Romero <santiago.borja@gmail.com>";
         $html = "Congratulations Santiago Borja Romero, you just sent an email with Mailgun! You are truly awesome!";
-        // if ($obj){
+        if ($obj){
             $html = "
             LISAH -SERCOP
 
-            El código de verificación es: 521251
+            ".$obj["mensaje"]."
 
             Att,
             LISAH APP
             LInux Server Administration & Hardening
             ";
-        // }   
+            $subject = $obj["subject"];
+            $to = $obj["to"];
+        }   
 
         if ($metodo){
             try{

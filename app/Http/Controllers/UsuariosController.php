@@ -36,8 +36,8 @@ class UsuariosController extends Controller
                 }
             }else{
                 $data = Usuario::where("idcliente", $payload->payload["idcliente"])
-                    ->whereRaw("idgrupo_usuario IS NOT NULL")
                     ->with("cliente", "servidores", "roles", "roles.menu", "grupo")->get();
+                // ->whereRaw("idgrupo_usuario IS NOT NULL")
             }
 
             // unset($data->token);
