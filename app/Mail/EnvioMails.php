@@ -24,33 +24,40 @@ class EnvioMails extends Mailable
     {
     }
 
-    /**
-     * Get the message envelope.
-     */
-    public function envelope(): Envelope
+    public function build()
     {
-        return new Envelope(
-            subject: 'Envio Mails',
-        );
+        return $this->view('emails.correo');
     }
 
-    /**
-     * Get the message content definition.
-     */
-    public function content(): Content
-    {
-        return new Content(
-            view: 'emails.correo',
-        );
-    }
+    // /**
+    //  * Get the message envelope.
+    //  */
+    // public function envelope(): Envelope
+    // {
+    //     return new Envelope(
+    //         subject: 'Envio Mails',
+    //     );
+    // }
 
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
-    public function attachments(): array
-    {
-        return [];
-    }
+    // /**
+    //  * Get the message content definition.
+    //  */
+    // public function content(): Content
+    // {
+    //     return new Content(
+    //         view: 'emails.correo',
+    //     );
+    // }
+
+    // /**
+    //  * Get the attachments for the message.
+    //  *
+    //  * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+    //  */
+    // public function attachments(): array
+    // {
+    //     return [];
+    // }
+
+    
 }

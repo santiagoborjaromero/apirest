@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\UsuariosCollection;
-use App\Models\AuditoriaUso;
-use App\Models\Cliente;
+use App\Mail\EnvioMails;
 use App\Models\Configuracion;
 use App\Models\HistoricoClaves;
 use App\Models\HistoricoCodigoVerificacion;
-use App\Models\Menu;
 use App\Models\RolMenu;
 use App\Models\Usuario;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Mailgun\Mailgun;
 
 class AuthController extends Controller
 {
@@ -591,6 +590,58 @@ class AuthController extends Controller
         }
 
         return Controller::reponseFormat($status, [], $mensaje) ;
+    }
+
+
+    public function envioMails($obj = []){
+        $status = false;
+        $mensaje = "";
+        $data = [];
+        $metodo = false;
+
+        $subject = "LISAH APP";
+        $to = "Santiago Borja Romero <santiago.borja@gmail.com>";
+        $html = "Congratulations Santiago Borja Romero, you just sent an email with Mailgun! You are truly awesome!";
+        // if ($obj){
+            $html = "
+            LISAH -SERCOP
+
+            El código de verificación es: 521251
+
+            Att,
+            LISAH APP
+            LInux Server Administration & Hardening
+            ";
+        // }   
+
+        if ($metodo){
+            try{
+                $status = true;
+                $data = Mail::to("santiago.borja@gmail.com")->send(new EnvioMails());
+            }catch(Exception $err){
+                $status = false;
+                error_log($err->getMessage());
+                $mensaje = $err->getMessage();
+            }
+        }else{
+            $status = true;
+
+            $mg = Mailgun::create('b80b5e1fec222ff50921742c68db0d59-5a4acb93-6b309fad');
+            $result = $mg->messages()->send(
+                'sandbox40c2cec5c50d4847b0c881e2a0aca554.mailgun.org',
+                [
+                    'from' => 'LISAH APP <lisah@sandbox40c2cec5c50d4847b0c881e2a0aca554.mailgun.org>',
+                    'to' => $to,
+                    'subject' => $subject,
+                    'text' => $html
+                ]
+            );
+    
+            print_r($result->getMessage());
+            $data = $result->getMessage();
+        }
+
+        return Controller::reponseFormat($status, $data, $mensaje) ;
     }
 
 

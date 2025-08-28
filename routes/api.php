@@ -122,4 +122,7 @@ Route::group([
     Route::get("acciones_audit/{id}", [AuditoriaUsoController::class, 'accionesAudit']);
     Route::get("ultimas_acciones_audit/{id}", [AuditoriaUsoController::class, 'ultimasAccionesAudit']);
     // Route::get("auditoria/{data}/{metodo}/{fechaini}/{fechafin}", [AuditoriaUsoController::class, 'getAuditoria']);
+    
+    Route::get("envio_email", [AuthController::class, 'envioMails']);
+    
 });

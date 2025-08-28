@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Correo de Prueba</h1>
-
+    Hello this is a simple test
     
 </body>
 </html>
