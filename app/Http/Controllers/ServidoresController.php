@@ -156,6 +156,7 @@ class ServidoresController extends Controller
             $record_g["terminal_puerto"] =  $record["terminal_puerto"];
             $record_g["comentarios"] =  $record["comentarios"];
             $record_g["idservidores_familia"] =  $record["idservidores_familia"];
+            $record_g["servicios"] =  $record["servicios"];
             // $record_g["idscript_monitoreo"] =  $record["idscript_monitoreo"];
 
             try{
@@ -220,6 +221,7 @@ class ServidoresController extends Controller
                 $record_g["terminal_puerto"] =  $record["terminal_puerto"];
                 $record_g["comentarios"] =  $record["comentarios"];
                 $record_g["idservidores_familia"] =  $record["idservidores_familia"];
+                $record_g["servicios"] =  $record["servicios"];
                 // $record_g["idscript_monitoreo"] =  $record["idscript_monitoreo"];
 
                 try{
