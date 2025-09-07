@@ -117,7 +117,7 @@ Route::group([
     /**
      * Auditorias e Historicos
      */
-    Route::get("histocmd", [AuditoriaUsoController::class, 'getHCmd']);
+    // Route::get("histocmd", [AuditoriaUsoController::class, 'getHCmd']);
     Route::get("auditoria/{data}", [AuditoriaUsoController::class, 'getAuditoria']);
     Route::get("acciones_audit/{id}", [AuditoriaUsoController::class, 'accionesAudit']);
     Route::get("ultimas_acciones_audit/{id}", [AuditoriaUsoController::class, 'ultimasAccionesAudit']);

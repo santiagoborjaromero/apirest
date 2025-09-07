@@ -91,21 +91,21 @@ class AuditoriaUsoController extends Controller
         return Controller::reponseFormat($status, $data, $mensaje) ;
     }
 
-    public function getHCmd(Request $request) {
-        $payload = (Object)Controller::tokenSecurity($request);
-        $status = false;
-        $data = [];
-        $mensaje="";
+    // public function getHCmd(Request $request) {
+    //     $payload = (Object)Controller::tokenSecurity($request);
+    //     $status = false;
+    //     $data = [];
+    //     $mensaje="";
 
-        if ($payload->validate){
-            $status = true;
-            $data = HistoricoCmd::where("idcliente", $payload->payload["idcliente"])->get()->toJson();
-        }else{
-            $status = false;
-            $mensaje = $payload->mensaje;
-        }
-        return Controller::reponseFormat($status, $data, $mensaje) ;
-    }
+    //     if ($payload->validate){
+    //         $status = true;
+    //         // $data = HistoricoCmd::where("idcliente", $payload->payload["idcliente"])->get()->toJson();
+    //     }else{
+    //         $status = false;
+    //         $mensaje = $payload->mensaje;
+    //     }
+    //     return Controller::reponseFormat($status, $data, $mensaje) ;
+    // }
 
     public function accionesAudit(Request $request, $id){
         $status = false;
