@@ -138,6 +138,7 @@ class GrupoUsuariosController extends Controller
             }
             
             $aud->saveAuditoria([
+                "idcliente" => $payload->payload["idcliente"],
                 "idusuario" => $payload->payload["idusuario"],
                 "json" => [
                     "grupo_usuario" => $record_g,
@@ -202,6 +203,7 @@ class GrupoUsuariosController extends Controller
                 }
                 
                 $aud->saveAuditoria([
+                    "idcliente" => $payload->payload["idcliente"],
                     "idusuario" => $payload->payload["idusuario"],
                     "json" => [
                         "grupo_usuario" => $record_g,
@@ -237,6 +239,7 @@ class GrupoUsuariosController extends Controller
                 GrupoUsuarios::where("idgrupo_usuario", $id)->delete();
                 RolMenuGrupos::where("idgrupo_usuario", $id)->delete();
                 $aud->saveAuditoria([
+                    "idcliente" => $payload->payload["idcliente"],
                     "idusuario" => $payload->payload["idusuario"],
                     "descripcion" => "Eliminado de Grupo de Usuario"
                 ]);
@@ -266,6 +269,7 @@ class GrupoUsuariosController extends Controller
                 $data = [];
                 GrupoUsuarios::where("idgrupo_usuario", $id)->restore();
                 $aud->saveAuditoria([
+                    "idcliente" => $payload->payload["idcliente"],
                     "idusuario" => $payload->payload["idusuario"],
                     "descripcion" => "Recuperación de Grupo de Usuario"
                 ]);

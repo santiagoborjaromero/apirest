@@ -187,6 +187,7 @@ class ServidoresController extends Controller
 
 
             $aud->saveAuditoria([
+                "idcliente" => $payload->payload["idcliente"],
                 "idusuario" => $payload->payload["idusuario"],
                 "json" => $record,
                 "descripcion" => "Creación de Servidores"
@@ -235,6 +236,7 @@ class ServidoresController extends Controller
                     $mensaje = $err;
                 }
                 $aud->saveAuditoria([
+                    "idcliente" => $payload->payload["idcliente"],
                     "idusuario" => $payload->payload["idusuario"],
                     "json" => $record,
                     "descripcion" => "Actualización de Servidores"
@@ -267,6 +269,7 @@ class ServidoresController extends Controller
                 Servidores::where("idservidor", $id)->update(["estado" => 0]);
                 Servidores::where("idservidor", $id)->delete();
                 $aud->saveAuditoria([
+                    "idcliente" => $payload->payload["idcliente"],
                     "idusuario" => $payload->payload["idusuario"],
                     "descripcion" => "Eliminado de Servidores"
                 ]);
@@ -296,6 +299,7 @@ class ServidoresController extends Controller
                 $data = [];
                 Servidores::where("idservidor", $id)->restore();
                 $aud->saveAuditoria([
+                    "idcliente" => $payload->payload["idcliente"],
                     "idusuario" => $payload->payload["idusuario"],
                     "descripcion" => "Recuperación de Servidores"
                 ]);
@@ -357,6 +361,7 @@ class ServidoresController extends Controller
                     }
                     $aud = new AuditoriaUsoController();
                     $aud->saveAuditoria([
+                        "idcliente" => $payload->payload["idcliente"],
                         "idusuario" => $payload->payload["idusuario"],
                         "json" => [
                             "host"=>$host,

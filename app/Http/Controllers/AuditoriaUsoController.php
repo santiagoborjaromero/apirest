@@ -118,23 +118,38 @@ class AuditoriaUsoController extends Controller
             $status = false;
             $mensaje = $payload->mensaje;
         }else{
-            error_log($id);
+            // error_log($id);
+            $identificador = 0;
+            if ($id == 0){
+               $sql="SELECT
+                  metodo, 
+                  descripcion,
+                  idusuario,
+                  count(*) as total
+                FROM 
+                  auditoria_uso
+                WHERE idcliente = ?
+                GROUP BY metodo, descripcion, idusuario
+                ORDER BY count(*) desc";
+              $identificador = $payload->payload["idcliente"];
+            }else{
+              $sql = "SELECT
+                  descripcion,
+                  count(*) as total
+                FROM auditoria_uso 
+                GROUP BY idusuario, descripcion 
+                HAVING idusuario = ?
+                ORDER BY count(*) DESC LIMIT 10";
+              $identificador = $id;
+            }
     
             try{
-                $sql = "SELECT
-                        descripcion,
-                        count(*) as total
-                    FROM auditoria_uso 
-                    GROUP BY idusuario, descripcion 
-                    HAVING idusuario = ?
-                    ORDER BY count(*) DESC LIMIT 10";
-                $data = DB::select($sql, [$id]);
-                $mensaje = "";
-                $status = true;
-    
+              $data = DB::select($sql, [$identificador]);
+              $mensaje = "";
+              $status = true;
             }catch(Exception $err){
-                $status = false;
-                $mensaje = $err;
+              $status = false;
+              $mensaje = $err;
             }
         }
         return Controller::reponseFormat($status, $data, $mensaje) ;
@@ -151,17 +166,18 @@ class AuditoriaUsoController extends Controller
             $status = false;
             $mensaje = $payload->mensaje;
         }else{
-            error_log($id);
-    
-            try{
-                $data = AuditoriaUso::orderBy('created_at', 'desc')->skip(0)->take(10)->get();
-                $mensaje = "";
-                $status = true;
-    
-            }catch(Exception $err){
-                $status = false;
-                $mensaje = $err;
+          try{
+            if ($id == 0){
+              $data = AuditoriaUso::where("idcliente", $payload->payload["idcliente"])->with("usuario")->orderBy('created_at', 'desc')->skip(0)->take(10)->get();
+            }else{
+              $data = AuditoriaUso::where("idusuario",$id)->with("usuario")->orderBy('created_at', 'desc')->skip(0)->take(10)->get();
             }
+            $mensaje = "";
+            $status = true;
+          }catch(Exception $err){
+            $status = false;
+            $mensaje = $err;
+          }
         }
         return Controller::reponseFormat($status, $data, $mensaje) ;
     }

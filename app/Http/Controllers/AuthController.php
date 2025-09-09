@@ -89,6 +89,7 @@ class AuthController extends Controller
             if ($rs->clave === null || $rs->clave == "cambiar" || $rs->clave == ""){
                 $mensaje = "Se establece nueva contraseña";
                 $aud->saveAuditoria([
+                    "idcliente" => $rs->idcliente,
                     "idusuario" => $rs->idusuario,
                     "mensaje" => $mensaje,
                     "descripcion" => "Error"
@@ -111,6 +112,7 @@ class AuthController extends Controller
                     $mensaje = "Contraseña erronea";
                     $data = [];
                     $aud->saveAuditoria([
+                        "idcliente" => $rs->idcliente,
                         "idusuario" => $rs->idusuario,
                         "json" => [
                             "usuario" => $usuario,
@@ -145,6 +147,7 @@ class AuthController extends Controller
                             $mensaje = "CADUCIDAD GENERAL: No se encuentra autorizado para ingresar dado a la fecha límite de caducidad de contraseña que esta determinado en {$fecha_limite_validez_clave}. Consulte con Administración";
                             $data = [];
                             $aud->saveAuditoria([
+                                "idcliente" => $rs->idcliente,
                                 "idusuario" => $rs->idusuario,
                                 "mensaje" => $mensaje,
                                 "descripcion" => "Caducidad"
@@ -158,6 +161,7 @@ class AuthController extends Controller
                                 $mensaje = "Se ha asignado nueva fecha de caducidad a la contraseña, se encontraba sin asignar";
             
                                 $aud->saveAuditoria([
+                                    "idcliente" => $rs->idcliente,
                                     "idusuario" => $rs->idusuario,
                                     "json" => [],
                                     "mensaje" => $mensaje,
@@ -171,6 +175,7 @@ class AuthController extends Controller
                                 $mensaje = "Contraseña caducada";
                                 $data = [];
                                 $aud->saveAuditoria([
+                                    "idcliente" => $rs->idcliente,
                                     "idusuario" => $rs->idusuario,
                                     "json" => [],
                                     "mensaje" => $mensaje,
@@ -196,6 +201,7 @@ class AuthController extends Controller
                                     $mensaje = "Rol Cliente  se encuentra suspendido";
                                     $data = [];
                                     $aud->saveAuditoria([
+                                        "idcliente" => $rs->idcliente,
                                         "idusuario" => $rs->idusuario,
                                         "json" => ["rol" => $rs->roles->idrol, "nombre" => $rs->roles->nombre],
                                         "mensaje" => $mensaje,
@@ -218,6 +224,7 @@ class AuthController extends Controller
                                                     $data = [];
                                                     $mensaje = "Token inválido";
                                                     $aud->saveAuditoria([
+                                                        "idcliente" => $rs->idcliente,
                                                         "idusuario" => $rs->idusuario,
                                                         "mensaje" => $mensaje,
                                                         "descripcion" => "Token Invalido"
@@ -254,6 +261,7 @@ class AuthController extends Controller
                                     error_log(json_encode($rt));
 
                                     $aud->saveAuditoria([
+                                        "idcliente" => $rs->idcliente,
                                         "idusuario" => $rs->idusuario,
                                         "mensaje" => "Sesión establecida con éxito",
                                         "descripcion" => "Autenticación de Usuario"
@@ -305,6 +313,7 @@ class AuthController extends Controller
 
             $aud = new AuditoriaUsoController();
             $aud->saveAuditoria([
+                "idcliente" => $rs->idcliente,
                 "idusuario" => $rs->idusuario,
                 "json" => null,
                 "mensaje" =>  $mensaje,

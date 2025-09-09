@@ -92,11 +92,12 @@ class ConfiguracionController extends Controller
             }
 
             $aud->saveAuditoria([
+                "idcliente" => $payload->payload["idcliente"],
                 "idusuario" => $payload->payload["idusuario"],
                 "json" => [
                     "cliente" => $record_clie,
                     "configuracion" => $record_cfg,
-                    "descripcion" => "Actualizacion de Configuración"
+                    "descripcion" => "Configuración"
                 ]
             ]);
         }

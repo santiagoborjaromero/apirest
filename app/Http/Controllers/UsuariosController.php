@@ -80,17 +80,17 @@ class UsuariosController extends Controller
                 switch ($accion){
                     case 'activos':
                         $data = Usuario::where("idcliente", $payload->payload["idcliente"])
-                            ->whereRaw("idgrupo_usuario IS NOT NULL")
+                            // ->whereRaw("idgrupo_usuario IS NOT NULL")
                             ->with("cliente",  "servidores", "roles", "roles.menu", "grupo")->get();
                         break;
                     case 'inactivos':
                         $data = Usuario::onlyTrashed()->where("idcliente", $payload->payload["idcliente"])
-                            ->whereRaw("idgrupo_usuario IS NOT NULL")
+                            // ->whereRaw("idgrupo_usuario IS NOT NULL")
                             ->with("cliente",  "servidores", "roles", "roles.menu", "grupo")->get();
                         break;
                     case 'todos':
                         $data = Usuario::withTrashed()->where("idcliente", $payload->payload["idcliente"])
-                            ->whereRaw("idgrupo_usuario IS NOT NULL")
+                            // ->whereRaw("idgrupo_usuario IS NOT NULL")
                             ->with("cliente", "servidores",  "roles", "roles.menu", "grupo")->get();
                         break;
                 }
@@ -203,6 +203,7 @@ class UsuariosController extends Controller
             
             $aud = new AuditoriaUsoController();
             $aud->saveAuditoria([
+                "idcliente" => $payload->payload["idcliente"],
                 "idusuario" => $payload->payload["idusuario"],
                 "json" => $record_u,
                 "descripcion" => "Creación de Usuarios"
@@ -300,6 +301,7 @@ class UsuariosController extends Controller
             
             $aud = new AuditoriaUsoController();
             $aud->saveAuditoria([
+                "idcliente" => $payload->payload["idcliente"],
                 "idusuario" => $payload->payload["idusuario"],
                 "json" => [
                     "usuario" => $record_u,
@@ -374,6 +376,7 @@ class UsuariosController extends Controller
             
             $aud = new AuditoriaUsoController();
             $aud->saveAuditoria([
+                "idcliente" => $payload->payload["idcliente"],
                 "idusuario" => $payload->payload["idusuario"],
                 "json" => [
                     "usuario" => $record_u,
@@ -475,6 +478,7 @@ class UsuariosController extends Controller
 
         $aud = new AuditoriaUsoController();
         $aud->saveAuditoria([
+            "idcliente" => $payload->payload["idcliente"],
             "idusuario" => $payload->payload["idusuario"],
             "json" => [
                 "usuario" => $id,
@@ -568,6 +572,7 @@ class UsuariosController extends Controller
             
             $aud = new AuditoriaUsoController();
             $aud->saveAuditoria([
+                "idcliente" => $payload->payload["idcliente"],
                 "idusuario" => $payload->payload["idusuario"],
                 "mensaje" =>$mensaje,
                 "descripcion" => "Eliminado de Usuarios"
@@ -598,6 +603,7 @@ class UsuariosController extends Controller
                 Usuario::where("idusuario", $id)->update(["estado"=>1]);
                 Usuario::where("idusuario", $id)->restore();
                 $aud->saveAuditoria([
+                    "idcliente" => $payload->payload["idcliente"],
                     "idusuario" => $payload->payload["idusuario"],
                     "descripcion" => "Recuperación de Usuarios"
                 ]);
