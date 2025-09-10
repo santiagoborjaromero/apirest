@@ -133,13 +133,23 @@ class AuditoriaUsoController extends Controller
                 ORDER BY count(*) desc";
               $identificador = $payload->payload["idcliente"];
             }else{
-              $sql = "SELECT
+            //   $sql = "SELECT
+            //       descripcion,
+            //       count(*) as total
+            //     FROM auditoria_uso 
+            //     GROUP BY idusuario, descripcion 
+            //     HAVING idusuario = ?
+            //     ORDER BY count(*) DESC LIMIT 10";
+              $sql="SELECT
+                  metodo, 
                   descripcion,
+                  idusuario,
                   count(*) as total
-                FROM auditoria_uso 
-                GROUP BY idusuario, descripcion 
-                HAVING idusuario = ?
-                ORDER BY count(*) DESC LIMIT 10";
+                FROM 
+                  auditoria_uso
+                WHERE idusuario = ?
+                GROUP BY metodo, descripcion, idusuario
+                ORDER BY count(*) desc";
               $identificador = $id;
             }
     
