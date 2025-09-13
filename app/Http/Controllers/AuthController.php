@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\EnvioMails;
+use App\Models\AuditoriaUso;
 use App\Models\Configuracion;
 use App\Models\HistoricoClaves;
 use App\Models\HistoricoCodigoVerificacion;
@@ -329,71 +330,58 @@ class AuthController extends Controller
 
     public function resetPassword(Request $request)
     {
-        $usuario = $request->input("usuario");  
-        $clave = $request->input("clave");
-
-        $aud = new AuditoriaUsoController();
-
-        $rs = null;
-        $status = true;
+        $status = "";
+        $data = [];
         $mensaje = "";
-        $data = null;
 
-        $data = Usuario::where("usuario", $usuario)->where("estado", 1)
-            ->with("cliente", "roles", "roles.menu", "config", "grupo")
-            ->get();
+        $payload = (Object) Controller::tokenSecurity($request);
+        if ($payload->validate){
 
-        foreach ($data as $key => $value) {
-            $rs = $value;
-        }
+            $aud = new AuditoriaUsoController();
 
-        if (count($data)>0){
+            $idusuario = $request->input("idusuario");  
+    
+            $rs = null;
             $status = true;
-
-            if ($rs->clave === null || $rs->clave == "cambiar" || $rs->clave == ""){
-                $mensaje = "Se establece nueva contraseña";
-                $aud->saveAuditoria([
-                    "idusuario" => $rs->idusuario,
-                    "mensaje" => $mensaje,
-                    "descripcion" => "Actualizacion de contraseña de Usuarios"
-                ]);
-                $status = false;
-                $data = [];
+            $mensaje = "";
+            $data = null;
+    
+            $data = Usuario::where("idusuario", $idusuario)->get();
+    
+            foreach ($data as $key => $value) {
+                $rs = $value;
+            }
+    
+            if (count($data)>0){
+                $status = true;
                 UsuariosController::setPassword($rs->idusuario, $rs->idcliente);
-            } else {
-                if ( Controller::encode($clave) != $rs->clave ){
-                    $status = false;
-                    $mensaje = "Contraseña erronea";
-                    $data = [];
-                    $aud->saveAuditoria([
-                        "idusuario" => $rs->idusuario,
-                        "json" => [
-                            "usuario" => $usuario,
-                        ],
-                        "mensaje" => $mensaje,
-                        "descripcion" => "Error"
-                    ]);
-                    Controller::enviarMensaje($rs->idusuario, $mensaje);
-                } else {
-                    UsuariosController::setPassword($rs->idusuario, $rs->idcliente);
-                    $mensaje = "Se ha establecido nueva contraseña";
-                    $aud->saveAuditoria([
-                        "idusuario" => $rs->idusuario,
-                        "mensaje" => $mensaje,
-                        "descripcion" => "Actualizacion de contraseña de Usuarios"
-                    ]);
-                }
+                $mensaje = "Se ha establecido nueva contraseña";
+                $aud->saveAuditoria([
+                    "idcliente" => $rs->idcliente,
+                    "idusuario" => $rs->idusuario,
+                    "json" => [
+                        "usuario" =>$rs->idusuario,
+                        "status" => $status,
+                        "razon" => "Cambio o reseteo de contraseña desde el LISAH Administrador"
+                    ],
+                    "mensaje" => $mensaje,
+                    "descripcion" => "Actualización de Contraseñas de Usuario"
+                ]);
+            }else{
+                $status = false;
+                $mensaje = "Usuario no existe o se encuentra inactivo";
+                $data = [];
+                $aud->saveAuditoria([
+                    "json" => ["usuario" => $usuario],
+                    "mensaje" => $mensaje,
+                    "descripcion" => "Error"
+                ]);
             }
         }else{
             $status = false;
-            $mensaje = "Usuario no existe o se encuentra inactivo";
-            $data = [];
-            $aud->saveAuditoria([
-                "json" => ["usuario" => $usuario],
-                "mensaje" => $mensaje,
-                "descripcion" => "Error"
-            ]);
+            $mensaje = $payload->mensaje;
         }
+
         return Controller::reponseFormat($status, $data, $mensaje) ;
     }
 
@@ -562,8 +550,6 @@ class AuthController extends Controller
             $status = $payload->validate;
             $mensaje = $payload->mensaje;
         }else{
-            
-
             $rs = Usuario::where("idusuario", $payload->payload["idusuario"])->get();
             foreach ($rs as $key => $value) {
                 $row = $value;
@@ -575,6 +561,7 @@ class AuthController extends Controller
                     if ($verificacion_codigo == $codigo){
                         $status = true;
                         $mensaje = "Código de verificación es correcto";
+                        Usuario::where("idusuario", $payload->payload["idusuario"])->update(["verificacion_expira"=> date("Y")."-01-01 00:00:00"]);
                     }else {
                         $status = false;
                         $mensaje = "El código de verificación es incorrecto";
@@ -650,6 +637,100 @@ class AuthController extends Controller
     
             print_r($result->getMessage());
             $data = $result->getMessage();
+        }
+
+        return Controller::reponseFormat($status, $data, $mensaje) ;
+    }
+
+
+    public function sendCod(Request $request){
+        $status = false;
+        $data = [];
+        $mensaje = "";
+        $record = [];
+        
+        $usuario = $request->input("usuario");  
+
+        $data = Usuario::where("usuario", $usuario)->get();
+
+        foreach ($data as $key => $value) {
+            $rs = $value;
+        }
+
+        if (count($data)>0){
+            if ($rs->estado == 0){
+                $status = false;
+                $data = [];
+                $mensaje = "Usuario se encuentra desactivado";
+            }else{
+                $status = true;
+                $data = [];
+                $mensaje = "Código generado";
+                $codigo = $this->generacionCodigoVerificacion($rs["idusuario"]);
+                Controller::enviarMensaje($rs["idusuario"], "Codigo de verificacion para LISAH es: {$codigo}");
+                $record["verificacion_codigo"] = $codigo;
+                $record["verificacion_expira"] = date('Y-m-d H:i:s', (strtotime ("+5 Minute")));
+                Usuario::where("idusuario", $rs["idusuario"])->update(json_decode(json_encode($record),true));
+            }
+        }else{
+            $status = false;
+            $data = [];
+            $mensaje = "Usuario no exite";
+        }
+        return Controller::reponseFormat($status, $data, $mensaje) ;
+    }
+
+    public function verificarCodigoReset(Request $request){
+        $status = false;
+        $data = [];
+        $mensaje = "";
+        
+        $usuario = $request->input("usuario");  
+        $codigo = $request->input("codigo");  
+
+
+        $rs = Usuario::where("usuario","=", $usuario)->get();
+        foreach ($rs as $key => $value) {
+            $row = $value;
+        }
+        if ($row){
+            $verificacion_codigo = $row["verificacion_codigo"];
+            $fecha_expiracion = date($row["verificacion_expira"]);
+            if ($fecha_expiracion >= date("Y-m-d H:i:s")){
+                if ($verificacion_codigo == $codigo){
+                    $status = true;
+                    $data = [];
+                    $mensaje = "Se ha establecido nueva contraseña";
+
+                    Usuario::where("idusuario",$row["idusuario"])->update(["verificacion_expira"=> date("Y")."-01-01 00:00:00"]);
+                    
+                    $resp = UsuariosController::setPassword($row->idusuario, $row->idcliente);
+                    $status = $resp["status"];
+                    $mensaje2 = $resp["mensaje"];
+                    
+                    $aud = new AuditoriaUsoController();
+                    $aud->saveAuditoria([
+                        "idcliente" => $row["idcliente"],
+                        "idusuario" => $row["idusuario"],
+                        "json" => [
+                            "usuario" => $row["idusuario"],
+                            "status" => $status,
+                            "razon" => "Cambio o reseteo de contraseña desde el LISAH Administrador"
+                        ],
+                        "mensaje" => $mensaje . ", Mensaje Guardar la clave y envio de mensaje =" . $mensaje2,
+                        "descripcion" => "Actualización de Contraseñas de Usuario"
+                    ]);
+                }else {
+                    $status = false;
+                    $mensaje = "El código de verificación es incorrecto";
+                }
+            } else {
+                $status = false;
+                $mensaje = "El código de verificación ha expirado";
+            }
+        } else {
+            $status = false;
+            $mensaje = "El código de verificación no existe";
         }
 
         return Controller::reponseFormat($status, $data, $mensaje) ;

@@ -35,8 +35,9 @@ Route::group([
     });
     Route::post("login", [AuthController::class, 'authUser']);
     Route::post("logout", [AuthController::class, 'logout']);
-    Route::post("reset", [AuthController::class, 'resetPassword']);
+    Route::post("sendcod", [AuthController::class, 'sendCod']);
     Route::get("email", [UsuariosController::class, 'envioMails']);
+    Route::post("verificador", [AuthController::class, 'verificarCodigoReset']);
 });
 
 
@@ -46,6 +47,7 @@ Route::group([
     "namespace" => "App\Http\Controller",
     "middleware" => "private"
 ], function (){
+    Route::post("reset", [AuthController::class, 'resetPassword']);
     Route::post("codigoverificador/{codigo}", [AuthController::class, 'verificarCodigo']);
     Route::post("regenerarcodigo", [AuthController::class, 'regenerarCodigo']);
 

@@ -495,7 +495,7 @@ class UsuariosController extends Controller
         $rs = Usuario::where("idusuario", $id)->get();
         if (count($rs)>0){
             $newclave = Controller::generacionClave();
-            $msg =  "LISAH comunica su nueva contraseña ". $rs[0]["nombre"] . ",\n su usuario es " . $rs[0]["usuario"] . " y nueva contraseña es = " . $newclave;
+            $msg =  "LISAH comunica su nueva contraseña ". $rs[0]["nombre"] . ", su usuario es " . $rs[0]["usuario"] . " y nueva contraseña es = " . $newclave;
             Controller::enviarMensaje($id, $msg);
             $clave = Controller::encode($newclave);
 
@@ -508,17 +508,11 @@ class UsuariosController extends Controller
 
             Usuario::where("idusuario", $id)->update($record_u);
 
-            $user = Usuario::where("idusuario", $id);
-
-            foreach ($user as $key => $value) {
-                $rs = $value;
-            }
-
-            UsuariosController::updateServidores([
-                "usuario" => $rs->usuario,
-                "clave"   => $clave,
-                "idusuario" => $id
-            ],null,"clave");
+            // UsuariosController::updateServidores([
+            //     "usuario" => $rs[0]->usuario,
+            //     "clave"   => $clave,
+            //     "idusuario" => $id
+            // ],null,"clave");
 
             $mensaje = "Clave generada con éxito";
             $status = true;
