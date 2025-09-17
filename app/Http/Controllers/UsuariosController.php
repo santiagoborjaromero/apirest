@@ -426,6 +426,12 @@ class UsuariosController extends Controller
                     case 'clave':
                         $cmd = 'sudo echo "'. $origen["usuario"].':'.$origen["clave"].'" | chpasswd';
                         break;
+                    case 'eliminar':
+                        $cmd = 'sudo userdel -r '. $origen["usuario"];
+                        break;
+                    case 'crear':
+                        $cmd = 'sudo useradd '. $origen["usuario"];
+                        break;
                 }
                 
                 error_log($cmd);
@@ -556,8 +562,28 @@ class UsuariosController extends Controller
             }else{
                 try{
                     Usuario::where("idusuario", $id)->update(["estado"=>0]);
+          
+
+                    $dt = Usuario::where("idusuario", $id)->get();
+                    foreach ($dt as $key => $value) {
+                        $user_data = $value;
+                    }
+                    $user = $user_data["usuario"];
+                    $password = Controller::decode($user_data["clave"]);
+
+                    $respserv = UsuariosController::updateServidores([
+                        "usuario" => $user,
+                        "clave" => $password,
+                        "idusuario" => $id
+                    ],null, "eliminar");
+
+                    $mensaje = $respserv["mensaje"];
+                    $serv_data = $respserv["data"];
+
                     $data = Usuario::where("idusuario", $id)->delete();
                     $status = true;
+
+
                 } catch (Exception $err){
                     $status = false;
                     $mensaje = "No pudo eliminar " . $err->getMessage();
@@ -596,6 +622,23 @@ class UsuariosController extends Controller
                 $data = [];
                 Usuario::where("idusuario", $id)->update(["estado"=>1]);
                 Usuario::where("idusuario", $id)->restore();
+
+                $dt = Usuario::where("idusuario", $id)->get();
+                foreach ($dt as $key => $value) {
+                    $user_data = $value;
+                }
+                $user = $user_data["usuario"];
+                $password = Controller::decode($user_data["clave"]);
+
+                $respserv = UsuariosController::updateServidores([
+                    "usuario" => $user,
+                    "clave" => $password,
+                    "idusuario" => $id
+                ],null, "crear");
+
+                $mensaje = $respserv["mensaje"];
+                $serv_data = $respserv["data"];
+                
                 $aud->saveAuditoria([
                     "idcliente" => $payload->payload["idcliente"],
                     "idusuario" => $payload->payload["idusuario"],
