@@ -134,7 +134,7 @@ class ScriptsController extends Controller
 
         if ($payload->validate){
             if ($id !=""){
-            $record = $request->input("data") ;
+                $record = $request->input();
                 try{
                     $record_scripts = [
                         "idcliente" => $payload->payload["idcliente"],
